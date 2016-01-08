@@ -20,12 +20,6 @@ app.register_blueprint(forum_api, url_prefix='/db/api/forum/')
 
 mysql.init_app(app)
 
-def get_user_info(email):
-    conn = mysql.get_db()
-    cursor = conn.cursor()
-    cursor.execute('SELECT * FROM User where email=%s', email)
-    return cursor.fetchall()
-
 
 @app.route('/')
 def hello_world():
