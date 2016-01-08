@@ -1,6 +1,8 @@
 from werkzeug.exceptions import BadRequest
 from flask import jsonify, Blueprint, request
 from flaskext.mysql import MySQL
+import datetime
+from time import mktime
 
 thread_api = Blueprint('thread_api', __name__)
 mysql = MySQL()
@@ -31,9 +33,9 @@ def thread_create():
     if 'isDeleted' in req_json:
         if req_json['isDeleted'] is not False and req_json['isDeleted'] is not True:
             return jsonify(code=3, response="Wrong parameters")
-        new_thread_is_del = req_json['isAnonymous']
+        new_thread_is_del = req_json['isDeleted']
 
-        if req_json['isAnonymous'] is True:
+        if req_json['isDeleted'] is True:
             new_thread_is_del_figure = 1
     else:
         new_thread_is_del = False
@@ -44,13 +46,25 @@ def thread_create():
     sql_data = (new_thread_forum, new_thread_title, new_thread_is_closed_figure, new_thread_user, new_thread_date,
                 new_thread_msg, new_thread_slug, new_thread_is_del_figure, 0, 0, 0)
 
-    # try:
-    #     cursor.execute('INSERT INTO Thread VALUES (null,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)', sql_data)
-    #     conn.commit()
-    # except Exception:
-    #     return jsonify(code=3, response="Wrong request")
+    thr_date = datetime.datetime.strptime(new_thread_date, "%Y-%m-%d %H:%M:%S")
+    timestamp = mktime(thr_date.timetuple())
+
+    try:
+        cursor.execute('INSERT INTO Thread VALUES (null,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)', sql_data)
+        newId = cursor.lastrowid
+        conn.commit()
+    except Exception:
+        return jsonify(code=3, response="Wrong request")
 
     resp = {
-        "time":new_thread_date
+        "id": newId,
+        "forum": new_thread_forum,
+        "title": new_thread_title,
+        "isClosed": new_thread_is_closed,
+        "user": new_thread_user,
+        "date": new_thread_date,
+        "message": new_thread_msg,
+        "slug": new_thread_slug,
+        "isDeleted": new_thread_is_del
     }
     return jsonify(code=0, response=resp)

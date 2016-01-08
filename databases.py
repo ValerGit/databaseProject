@@ -1,9 +1,8 @@
-from flask import Flask, jsonify, Blueprint, request
+from flask import Flask, jsonify
 from flaskext.mysql import MySQL
-
 from user import user_api
 from forum import forum_api
-from thread import thread_create
+from threaad import thread_api
 
 mysql = MySQL()
 
@@ -14,7 +13,6 @@ app.config['MYSQL_DATABASE_USER'] = 'root'
 app.config['MYSQL_DATABASE_PASSWORD'] = ''
 app.config['MYSQL_DATABASE_DB'] = 'db_project'
 app.config['MYSQL_DATABASE_HOST'] = 'localhost'
-
 
 app.register_blueprint(user_api, url_prefix='/db/api/user/')
 app.register_blueprint(forum_api, url_prefix='/db/api/forum/')
