@@ -14,7 +14,7 @@
   </component>
   <component name="ChangesViewManager" flattened_view="true" show_ignored="false" />
   <component name="CoverageDataManager">
-    <SUITE FILE_PATH="coverage/databases$databases.coverage" NAME="databases Coverage Results" MODIFIED="1452183395904" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/databases$databases.coverage" NAME="databases Coverage Results" MODIFIED="1452187573091" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
   </component>
   <component name="CreatePatchCommitExecutor">
     <option name="PATCH_PATH" value="" />
@@ -31,31 +31,40 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="databases.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="databases.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/databases.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.6210826">
-              <caret line="234" column="39" selection-start-line="234" selection-start-column="39" selection-end-line="234" selection-end-column="39" />
+            <state vertical-scroll-proportion="0.0">
+              <caret line="21" column="0" selection-start-line="21" selection-start-column="0" selection-end-line="21" selection-end-column="0" />
               <folding>
-                <element signature="e#0#32#0" expanded="true" />
-                <marker date="1452183391000" expanded="true" signature="503:534" placeholder="SELECT * FRO..User..." />
-                <marker date="1452183391000" expanded="true" signature="685:703" placeholder="SELECT * FRO..User..." />
-                <marker date="1452183391000" expanded="true" signature="1996:2041" placeholder="INSERT INTO ..." />
-                <marker date="1452183391000" expanded="true" signature="2928:2964" placeholder="INSERT INTO ..." />
-                <marker date="1452183391000" expanded="true" signature="3638:3693" placeholder="DELETE FROM ..." />
-                <marker date="1452183391000" expanded="true" signature="3638:3725" placeholder="DELETE FROM ..." />
-                <marker date="1452183391000" expanded="true" signature="3649:3693" placeholder="INSERT INTO ..." />
-                <marker date="1452183391000" expanded="true" signature="4405:4426" placeholder="UPDATE User ..." />
-                <marker date="1452183391000" expanded="true" signature="4405:4437" placeholder="UPDATE User ..." />
-                <marker date="1452183391000" expanded="true" signature="4405:4450" placeholder="UPDATE User ..." />
-                <marker date="1452183391000" expanded="true" signature="4405:4452" placeholder="UPDATE User ..." />
-                <marker date="1452183391000" expanded="true" signature="4405:4464" placeholder="UPDATE User ..." />
-                <marker date="1452183391000" expanded="true" signature="6376:6411" placeholder="SELECT * FRO..User..." />
-                <marker date="1452183391000" expanded="true" signature="6526:6666" placeholder="SELECT F.fol..Following..." />
-                <marker date="1452183391000" expanded="true" signature="7111:7251" placeholder="SELECT F.fol..Following..." />
-                <marker date="1452183391000" expanded="true" signature="8172:8207" placeholder="SELECT * FRO..User..." />
-                <marker date="1452183391000" expanded="true" signature="8901:8951" placeholder="SELECT follo..Following..." />
-                <marker date="1452183391000" expanded="true" signature="9193:9243" placeholder="SELECT follo..Following..." />
+                <element signature="e#0#52#0" expanded="true" />
+                <marker date="1452191892000" expanded="true" signature="611:642" placeholder="SELECT * FRO..User..." />
+                <marker date="1452191892000" expanded="true" signature="793:811" placeholder="SELECT * FRO..User..." />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="user.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/user.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="44" column="8" selection-start-line="44" selection-start-column="8" selection-end-line="44" selection-end-column="61" />
+              <folding>
+                <element signature="e#0#42#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="forum.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/forum.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.6196581">
+              <caret line="29" column="56" selection-start-line="29" selection-start-column="56" selection-end-line="29" selection-end-column="56" />
+              <folding>
+                <element signature="e#0#42#0" expanded="true" />
+                <marker date="1452192956000" expanded="true" signature="771:807" placeholder="INSERT INTO ..." />
               </folding>
             </state>
           </provider>
@@ -67,13 +76,16 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Flask Main" />
+        <option value="Python Script" />
       </list>
     </option>
   </component>
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
+        <option value="$PROJECT_DIR$/user.py" />
         <option value="$PROJECT_DIR$/databases.py" />
+        <option value="$PROJECT_DIR$/forum.py" />
       </list>
     </option>
   </component>
@@ -413,18 +425,18 @@
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.329235" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32956383" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.329235" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32876712" sideWeight="0.5" order="8" side_tool="true" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="8" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
-      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32876712" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.26494345" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.273021" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32876712" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
@@ -454,25 +466,9 @@
         <state vertical-scroll-proportion="0.0">
           <caret line="98" column="39" selection-start-line="98" selection-start-column="39" selection-end-line="98" selection-end-column="39" />
           <folding>
-            <element signature="e#0#32#0" expanded="true" />
-            <marker date="1452183391000" expanded="true" signature="503:534" placeholder="SELECT * FRO..User..." />
-            <marker date="1452183391000" expanded="true" signature="685:703" placeholder="SELECT * FRO..User..." />
-            <marker date="1452183391000" expanded="true" signature="1996:2041" placeholder="INSERT INTO ..." />
-            <marker date="1452183391000" expanded="true" signature="2928:2964" placeholder="INSERT INTO ..." />
-            <marker date="1452183391000" expanded="true" signature="3638:3693" placeholder="DELETE FROM ..." />
-            <marker date="1452183391000" expanded="true" signature="3638:3725" placeholder="DELETE FROM ..." />
-            <marker date="1452183391000" expanded="true" signature="3649:3693" placeholder="INSERT INTO ..." />
-            <marker date="1452183391000" expanded="true" signature="4405:4426" placeholder="UPDATE User ..." />
-            <marker date="1452183391000" expanded="true" signature="4405:4437" placeholder="UPDATE User ..." />
-            <marker date="1452183391000" expanded="true" signature="4405:4450" placeholder="UPDATE User ..." />
-            <marker date="1452183391000" expanded="true" signature="4405:4452" placeholder="UPDATE User ..." />
-            <marker date="1452183391000" expanded="true" signature="4405:4464" placeholder="UPDATE User ..." />
-            <marker date="1452183391000" expanded="true" signature="6376:6411" placeholder="SELECT * FRO..User..." />
-            <marker date="1452183391000" expanded="true" signature="6526:6666" placeholder="SELECT F.fol..Following..." />
-            <marker date="1452183391000" expanded="true" signature="7111:7251" placeholder="SELECT F.fol..Following..." />
-            <marker date="1452183391000" expanded="true" signature="8172:8207" placeholder="SELECT * FRO..User..." />
-            <marker date="1452183391000" expanded="true" signature="8901:8951" placeholder="SELECT follo..Following..." />
-            <marker date="1452183391000" expanded="true" signature="9193:9243" placeholder="SELECT follo..Following..." />
+            <element signature="e#0#52#0" expanded="true" />
+            <marker date="1452191892000" expanded="true" signature="611:642" placeholder="SELECT * FRO..User..." />
+            <marker date="1452191892000" expanded="true" signature="793:811" placeholder="SELECT * FRO..User..." />
           </folding>
         </state>
       </provider>
@@ -490,25 +486,9 @@
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#0#32#0" expanded="true" />
-            <marker date="1452183391000" expanded="true" signature="503:534" placeholder="SELECT * FRO..User..." />
-            <marker date="1452183391000" expanded="true" signature="685:703" placeholder="SELECT * FRO..User..." />
-            <marker date="1452183391000" expanded="true" signature="1996:2041" placeholder="INSERT INTO ..." />
-            <marker date="1452183391000" expanded="true" signature="2928:2964" placeholder="INSERT INTO ..." />
-            <marker date="1452183391000" expanded="true" signature="3638:3693" placeholder="DELETE FROM ..." />
-            <marker date="1452183391000" expanded="true" signature="3638:3725" placeholder="DELETE FROM ..." />
-            <marker date="1452183391000" expanded="true" signature="3649:3693" placeholder="INSERT INTO ..." />
-            <marker date="1452183391000" expanded="true" signature="4405:4426" placeholder="UPDATE User ..." />
-            <marker date="1452183391000" expanded="true" signature="4405:4437" placeholder="UPDATE User ..." />
-            <marker date="1452183391000" expanded="true" signature="4405:4450" placeholder="UPDATE User ..." />
-            <marker date="1452183391000" expanded="true" signature="4405:4452" placeholder="UPDATE User ..." />
-            <marker date="1452183391000" expanded="true" signature="4405:4464" placeholder="UPDATE User ..." />
-            <marker date="1452183391000" expanded="true" signature="6376:6411" placeholder="SELECT * FRO..User..." />
-            <marker date="1452183391000" expanded="true" signature="6526:6666" placeholder="SELECT F.fol..Following..." />
-            <marker date="1452183391000" expanded="true" signature="7111:7251" placeholder="SELECT F.fol..Following..." />
-            <marker date="1452183391000" expanded="true" signature="8172:8207" placeholder="SELECT * FRO..User..." />
-            <marker date="1452183391000" expanded="true" signature="8901:8951" placeholder="SELECT follo..Following..." />
-            <marker date="1452183391000" expanded="true" signature="9193:9243" placeholder="SELECT follo..Following..." />
+            <element signature="e#0#52#0" expanded="true" />
+            <marker date="1452191892000" expanded="true" signature="611:642" placeholder="SELECT * FRO..User..." />
+            <marker date="1452191892000" expanded="true" signature="793:811" placeholder="SELECT * FRO..User..." />
           </folding>
         </state>
       </provider>
@@ -526,25 +506,9 @@
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#0#32#0" expanded="true" />
-            <marker date="1452183391000" expanded="true" signature="503:534" placeholder="SELECT * FRO..User..." />
-            <marker date="1452183391000" expanded="true" signature="685:703" placeholder="SELECT * FRO..User..." />
-            <marker date="1452183391000" expanded="true" signature="1996:2041" placeholder="INSERT INTO ..." />
-            <marker date="1452183391000" expanded="true" signature="2928:2964" placeholder="INSERT INTO ..." />
-            <marker date="1452183391000" expanded="true" signature="3638:3693" placeholder="DELETE FROM ..." />
-            <marker date="1452183391000" expanded="true" signature="3638:3725" placeholder="DELETE FROM ..." />
-            <marker date="1452183391000" expanded="true" signature="3649:3693" placeholder="INSERT INTO ..." />
-            <marker date="1452183391000" expanded="true" signature="4405:4426" placeholder="UPDATE User ..." />
-            <marker date="1452183391000" expanded="true" signature="4405:4437" placeholder="UPDATE User ..." />
-            <marker date="1452183391000" expanded="true" signature="4405:4450" placeholder="UPDATE User ..." />
-            <marker date="1452183391000" expanded="true" signature="4405:4452" placeholder="UPDATE User ..." />
-            <marker date="1452183391000" expanded="true" signature="4405:4464" placeholder="UPDATE User ..." />
-            <marker date="1452183391000" expanded="true" signature="6376:6411" placeholder="SELECT * FRO..User..." />
-            <marker date="1452183391000" expanded="true" signature="6526:6666" placeholder="SELECT F.fol..Following..." />
-            <marker date="1452183391000" expanded="true" signature="7111:7251" placeholder="SELECT F.fol..Following..." />
-            <marker date="1452183391000" expanded="true" signature="8172:8207" placeholder="SELECT * FRO..User..." />
-            <marker date="1452183391000" expanded="true" signature="8901:8951" placeholder="SELECT follo..Following..." />
-            <marker date="1452183391000" expanded="true" signature="9193:9243" placeholder="SELECT follo..Following..." />
+            <element signature="e#0#52#0" expanded="true" />
+            <marker date="1452191892000" expanded="true" signature="611:642" placeholder="SELECT * FRO..User..." />
+            <marker date="1452191892000" expanded="true" signature="793:811" placeholder="SELECT * FRO..User..." />
           </folding>
         </state>
       </provider>
@@ -554,25 +518,9 @@
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#0#32#0" expanded="true" />
-            <marker date="1452183391000" expanded="true" signature="503:534" placeholder="SELECT * FRO..User..." />
-            <marker date="1452183391000" expanded="true" signature="685:703" placeholder="SELECT * FRO..User..." />
-            <marker date="1452183391000" expanded="true" signature="1996:2041" placeholder="INSERT INTO ..." />
-            <marker date="1452183391000" expanded="true" signature="2928:2964" placeholder="INSERT INTO ..." />
-            <marker date="1452183391000" expanded="true" signature="3638:3693" placeholder="DELETE FROM ..." />
-            <marker date="1452183391000" expanded="true" signature="3638:3725" placeholder="DELETE FROM ..." />
-            <marker date="1452183391000" expanded="true" signature="3649:3693" placeholder="INSERT INTO ..." />
-            <marker date="1452183391000" expanded="true" signature="4405:4426" placeholder="UPDATE User ..." />
-            <marker date="1452183391000" expanded="true" signature="4405:4437" placeholder="UPDATE User ..." />
-            <marker date="1452183391000" expanded="true" signature="4405:4450" placeholder="UPDATE User ..." />
-            <marker date="1452183391000" expanded="true" signature="4405:4452" placeholder="UPDATE User ..." />
-            <marker date="1452183391000" expanded="true" signature="4405:4464" placeholder="UPDATE User ..." />
-            <marker date="1452183391000" expanded="true" signature="6376:6411" placeholder="SELECT * FRO..User..." />
-            <marker date="1452183391000" expanded="true" signature="6526:6666" placeholder="SELECT F.fol..Following..." />
-            <marker date="1452183391000" expanded="true" signature="7111:7251" placeholder="SELECT F.fol..Following..." />
-            <marker date="1452183391000" expanded="true" signature="8172:8207" placeholder="SELECT * FRO..User..." />
-            <marker date="1452183391000" expanded="true" signature="8901:8951" placeholder="SELECT follo..Following..." />
-            <marker date="1452183391000" expanded="true" signature="9193:9243" placeholder="SELECT follo..Following..." />
+            <element signature="e#0#52#0" expanded="true" />
+            <marker date="1452191892000" expanded="true" signature="611:642" placeholder="SELECT * FRO..User..." />
+            <marker date="1452191892000" expanded="true" signature="793:811" placeholder="SELECT * FRO..User..." />
           </folding>
         </state>
       </provider>
@@ -582,25 +530,9 @@
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#0#32#0" expanded="true" />
-            <marker date="1452183391000" expanded="true" signature="503:534" placeholder="SELECT * FRO..User..." />
-            <marker date="1452183391000" expanded="true" signature="685:703" placeholder="SELECT * FRO..User..." />
-            <marker date="1452183391000" expanded="true" signature="1996:2041" placeholder="INSERT INTO ..." />
-            <marker date="1452183391000" expanded="true" signature="2928:2964" placeholder="INSERT INTO ..." />
-            <marker date="1452183391000" expanded="true" signature="3638:3693" placeholder="DELETE FROM ..." />
-            <marker date="1452183391000" expanded="true" signature="3638:3725" placeholder="DELETE FROM ..." />
-            <marker date="1452183391000" expanded="true" signature="3649:3693" placeholder="INSERT INTO ..." />
-            <marker date="1452183391000" expanded="true" signature="4405:4426" placeholder="UPDATE User ..." />
-            <marker date="1452183391000" expanded="true" signature="4405:4437" placeholder="UPDATE User ..." />
-            <marker date="1452183391000" expanded="true" signature="4405:4450" placeholder="UPDATE User ..." />
-            <marker date="1452183391000" expanded="true" signature="4405:4452" placeholder="UPDATE User ..." />
-            <marker date="1452183391000" expanded="true" signature="4405:4464" placeholder="UPDATE User ..." />
-            <marker date="1452183391000" expanded="true" signature="6376:6411" placeholder="SELECT * FRO..User..." />
-            <marker date="1452183391000" expanded="true" signature="6526:6666" placeholder="SELECT F.fol..Following..." />
-            <marker date="1452183391000" expanded="true" signature="7111:7251" placeholder="SELECT F.fol..Following..." />
-            <marker date="1452183391000" expanded="true" signature="8172:8207" placeholder="SELECT * FRO..User..." />
-            <marker date="1452183391000" expanded="true" signature="8901:8951" placeholder="SELECT follo..Following..." />
-            <marker date="1452183391000" expanded="true" signature="9193:9243" placeholder="SELECT follo..Following..." />
+            <element signature="e#0#52#0" expanded="true" />
+            <marker date="1452191892000" expanded="true" signature="611:642" placeholder="SELECT * FRO..User..." />
+            <marker date="1452191892000" expanded="true" signature="793:811" placeholder="SELECT * FRO..User..." />
           </folding>
         </state>
       </provider>
@@ -692,28 +624,33 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/databases.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.6210826">
-          <caret line="234" column="39" selection-start-line="234" selection-start-column="39" selection-end-line="234" selection-end-column="39" />
+        <state vertical-scroll-proportion="0.0">
+          <caret line="21" column="0" selection-start-line="21" selection-start-column="0" selection-end-line="21" selection-end-column="0" />
           <folding>
-            <element signature="e#0#32#0" expanded="true" />
-            <marker date="1452183391000" expanded="true" signature="503:534" placeholder="SELECT * FRO..User..." />
-            <marker date="1452183391000" expanded="true" signature="685:703" placeholder="SELECT * FRO..User..." />
-            <marker date="1452183391000" expanded="true" signature="1996:2041" placeholder="INSERT INTO ..." />
-            <marker date="1452183391000" expanded="true" signature="2928:2964" placeholder="INSERT INTO ..." />
-            <marker date="1452183391000" expanded="true" signature="3638:3693" placeholder="DELETE FROM ..." />
-            <marker date="1452183391000" expanded="true" signature="3638:3725" placeholder="DELETE FROM ..." />
-            <marker date="1452183391000" expanded="true" signature="3649:3693" placeholder="INSERT INTO ..." />
-            <marker date="1452183391000" expanded="true" signature="4405:4426" placeholder="UPDATE User ..." />
-            <marker date="1452183391000" expanded="true" signature="4405:4437" placeholder="UPDATE User ..." />
-            <marker date="1452183391000" expanded="true" signature="4405:4450" placeholder="UPDATE User ..." />
-            <marker date="1452183391000" expanded="true" signature="4405:4452" placeholder="UPDATE User ..." />
-            <marker date="1452183391000" expanded="true" signature="4405:4464" placeholder="UPDATE User ..." />
-            <marker date="1452183391000" expanded="true" signature="6376:6411" placeholder="SELECT * FRO..User..." />
-            <marker date="1452183391000" expanded="true" signature="6526:6666" placeholder="SELECT F.fol..Following..." />
-            <marker date="1452183391000" expanded="true" signature="7111:7251" placeholder="SELECT F.fol..Following..." />
-            <marker date="1452183391000" expanded="true" signature="8172:8207" placeholder="SELECT * FRO..User..." />
-            <marker date="1452183391000" expanded="true" signature="8901:8951" placeholder="SELECT follo..Following..." />
-            <marker date="1452183391000" expanded="true" signature="9193:9243" placeholder="SELECT follo..Following..." />
+            <element signature="e#0#52#0" expanded="true" />
+            <marker date="1452191892000" expanded="true" signature="611:642" placeholder="SELECT * FRO..User..." />
+            <marker date="1452191892000" expanded="true" signature="793:811" placeholder="SELECT * FRO..User..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/user.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="44" column="8" selection-start-line="44" selection-start-column="8" selection-end-line="44" selection-end-column="61" />
+          <folding>
+            <element signature="e#0#42#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/forum.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.6196581">
+          <caret line="29" column="56" selection-start-line="29" selection-start-column="56" selection-end-line="29" selection-end-column="56" />
+          <folding>
+            <element signature="e#0#42#0" expanded="true" />
+            <marker date="1452192956000" expanded="true" signature="771:807" placeholder="INSERT INTO ..." />
           </folding>
         </state>
       </provider>
