@@ -3,6 +3,7 @@ from flaskext.mysql import MySQL
 
 from user import user_api
 from forum import forum_api
+from thread import thread_create
 
 mysql = MySQL()
 
@@ -17,6 +18,7 @@ app.config['MYSQL_DATABASE_HOST'] = 'localhost'
 
 app.register_blueprint(user_api, url_prefix='/db/api/user/')
 app.register_blueprint(forum_api, url_prefix='/db/api/forum/')
+app.register_blueprint(thread_api, url_prefix='/db/api/thread/')
 
 mysql.init_app(app)
 
