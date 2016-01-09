@@ -3,3 +3,4 @@
 .name
 .xml
 *.pyc
+.DS_Store
