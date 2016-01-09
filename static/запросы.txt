@@ -1,0 +1,37 @@
+______________________________________________________________________________________
+
+User
+
+curl -H "Content-Type: application/json" -X POST -d '{"username": "Sarochka", "about": "hello im user1", "isAnonymous": false, "name": "Sara", "email": "hello@mail.ru"}' http://127.0.0.1:5000/db/api/user/create/
+
+
+curl -H "Content-Type: application/json" -X POST -d '{"follower": "two@mail.ru", "followee": "hedkek@mail.ru"}' http://127.0.0.1:5000/db/api/user/follow/
+
+
+curl -H "Content-Type: application/json" -X POST -d '{"follower": «one@mail.ru", "followee": "two@mail.ru"}' http://127.0.0.1:5000/db/api/user/unfollow/
+
+curl -H "Content-Type: application/json" -X POST -d '{"about": "Wowowowow!!!", "user": "exas@mail.ru", "name": "NewName"}' http://127.0.0.1:5000/db/api/user/updateProfile/
+
+http://127.0.0.1:5000/db/api/user/details/?user=one%40mail.ru
+
+http://127.0.0.1:5000/db/api/user/listFollowers/?user=two%40mail.ru&order=asc&since_id=20&limit=1
+
+http://127.0.0.1:5000/db/api/user/listFollowing/?user=two%40mail.ru&order=asc&since_id=15
+______________________________________________________________________________________
+______________________________________________________________________________________
+
+Forum
+
+curl -H "Content-Type: application/json" -X POST -d '{"name": "Forum supas", "short_name": "forum2", "user": "two@mail.ru"}' http://127.0.0.1:5000/db/api/forum/create/
+
+http://127.0.0.1:5000/db/api/forum/details/?forum=forum2&related=user
+
+______________________________________________________________________________________
+______________________________________________________________________________________
+
+Thread
+
+curl -H "Content-Type: application/json" -X POST -d '{"forum": "forum1", "title": "Thread With Sufficiently Large Title", "isClosed": true, "user": "one@mail.ru", "date": "2014-01-01 00:00:01", "message": "hey hey hey hey!", "slug": "Threadwithsufficientlylargetitle", "isDeleted": true}' http://127.0.0.1:5000/db/api/thread/create/
+
+
+
