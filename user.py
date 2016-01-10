@@ -52,6 +52,7 @@ def user_create():
         "isAnonymous": new_user_is_anon,
         "id": cursor.lastrowid,
     }
+    cursor.close()
     return jsonify(code=0, response=resp)
 
 
@@ -70,11 +71,13 @@ def user_follow():
     new_followee = req_json['followee']
     new_follower = req_json['follower']
 
-    try:
-        cursor.execute('INSERT INTO following VALUES (%s,%s)', (new_followee, new_follower))
-        conn.commit()
-    except Exception:
-        return jsonify(code=3, response="Wrong request")
+    cursor.execute("SELECT * FROM Following WHERE followee = %s AND follower = %s", (new_followee, new_follower))
+    if not cursor.fetchall():
+        try:
+            cursor.execute('INSERT INTO following VALUES (%s,%s)', (new_followee, new_follower))
+            conn.commit()
+        except Exception:
+            return jsonify(code=3, response="Wrong request")
 
     return get_all_user_info(cursor, new_follower)
 
@@ -94,9 +97,8 @@ def user_unfollow():
     del_followee = req_json['followee']
     del_follower = req_json['follower']
 
-    cursor.execute("DELETE FROM following WHERE followee=%s and follower=%s", (del_followee, del_follower))
+    cursor.execute("DELETE FROM following WHERE followee=%s AND follower=%s", (del_followee, del_follower))
     conn.commit()
-
     return get_all_user_info(cursor, del_follower)
 
 
@@ -140,7 +142,6 @@ def user_details():
 def user_followers_list():
     conn = mysql.get_db()
     cursor = conn.cursor()
-
     user_email = request.args.get('user')
     if not user_email:
         return jsonify(code=3, response="Wrong request")
