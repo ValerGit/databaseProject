@@ -44,17 +44,25 @@ def forum_create():
 def forum_details():
     conn = mysql.get_db()
     cursor = conn.cursor()
-    try:
-        forum_short_name = request.args.get('forum','')
-    except KeyError:
+    forum_short_name = request.args.get('forum')
+
+    if not forum_short_name:
         return jsonify(code=3, response="Wrong request")
 
-    cursor.execute("SELECT * FROM Forum WHERE short_name='%s'" % forum_short_name)
-    forum_info = cursor.fetchall()
-    forum_id = forum_info[0][0]
-    forum_name = forum_info[0][1]
-    forum_short_name = forum_info[0][2]
-    user_email = forum_info[0][3]
+    try:
+        cursor.execute("SELECT * FROM Forum WHERE short_name='%s'" % forum_short_name)
+    except Exception:
+        return jsonify(code=3, response="Wrong request")
+
+    forum = cursor.fetchall()
+    if not forum:
+        return jsonify(code=1, response="No such thread")
+    forum_info = forum[0]
+
+    forum_id = forum_info[0]
+    forum_name = forum_info[1]
+    forum_short_name = forum_info[2]
+    user_email = forum_info[3]
 
     if request.args.get('related', '') == 'user':
         user_info = get_user_info_external(cursor, user_email)
@@ -68,3 +76,22 @@ def forum_details():
         "user": user_info
     }
     return jsonify(code=0, response=resp)
+
+
+def get_forum_info_external(cursor, forum_short_name):
+    cursor.execute("SELECT * FROM Forum WHERE short_name='%s'" % forum_short_name)
+    forum_info = cursor.fetchall()[0]
+    resp = {}
+    if forum_info:
+        forum_id = forum_info[0]
+        forum_name = forum_info[1]
+        forum_short_name = forum_info[2]
+        user_email = forum_info[3]
+
+        resp = {
+            "id": forum_id,
+            "name": forum_name,
+            "short_name": forum_short_name,
+            "user": user_email
+        }
+    return resp

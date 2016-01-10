@@ -130,9 +130,8 @@ def user_update():
 def user_details():
     conn = mysql.get_db()
     cursor = conn.cursor()
-    try:
-        user_email = request.args.get('user','')
-    except KeyError:
+    user_email = request.args.get('user')
+    if not user_email:
         return jsonify(code=3, response="Wrong request")
     return get_all_user_info(cursor, user_email)
 
@@ -141,9 +140,9 @@ def user_details():
 def user_followers_list():
     conn = mysql.get_db()
     cursor = conn.cursor()
-    try:
-        user_email = request.args.get('user', '')
-    except KeyError:
+
+    user_email = request.args.get('user')
+    if not user_email:
         return jsonify(code=3, response="Wrong request")
 
     limit=''
@@ -164,20 +163,20 @@ def user_followers_list():
 def user_followings_list():
     conn = mysql.get_db()
     cursor = conn.cursor()
-    try:
-        user_email = request.args.get('user', '')
-    except KeyError:
+
+    user_email = request.args.get('user')
+    if not user_email:
         return jsonify(code=3, response="Wrong request")
 
     limit = ''
     if request.args.get('limit',''):
         limit = 'LIMIT '+request.args.get('limit', '')
 
-    order='DESC'
+    order = 'DESC'
     if request.args.get('order', ''):
         order=request.args.get('order', '')
 
-    since_id=1
+    since_id = 1
     if request.args.get('since_id', ''):
         since_id = request.args.get('since_id', '')
 
@@ -187,70 +186,70 @@ def user_followings_list():
 def list_folowings(cursor, limit, order, since_id, user_email, is_follower):
     cursor.execute("SELECT * FROM User where email='%s'" % user_email)
     usr_info = cursor.fetchall()
-    if usr_info:
-        if is_follower:
-            first = '''SELECT F.follower FROM Following F INNER JOIN User U ON F.follower = U.email
+    if not usr_info:
+        return jsonify(code=1, response="No such list")
+    if is_follower:
+        first = '''SELECT F.follower FROM Following F INNER JOIN User U ON F.follower = U.email
                           WHERE U.id >= %s AND F.followee= '%s' ''' % (since_id, user_email)
-            second = " ORDER BY F.follower %s %s" % (order, limit)
-            query = first + second
-            cursor.execute(query)
-            all_followers = cursor.fetchall()
-            all_fetched_followers = []
-            for x in all_followers:
-                all_fetched_followers.append(x[0])
-            all_fetched_followees = get_followees(cursor, user_email)
-        else:
-            first = '''SELECT F.followee FROM Following F INNER JOIN User U ON F.followee = U.email
+        second = " ORDER BY F.follower %s %s" % (order, limit)
+        query = first + second
+        cursor.execute(query)
+        all_followers = cursor.fetchall()
+        all_fetched_followers = []
+        for x in all_followers:
+            all_fetched_followers.append(x[0])
+        all_fetched_followees = get_followees(cursor, user_email)
+    else:
+        first = '''SELECT F.followee FROM Following F INNER JOIN User U ON F.followee = U.email
                           WHERE U.id >= %s AND F.follower= '%s' ''' % (since_id, user_email)
-            second = " ORDER BY F.followee %s %s" % (order, limit)
-            query = first + second
-            cursor.execute(query)
-            all_followers = cursor.fetchall()
-            all_fetched_followees = []
-            for x in all_followers:
-                all_fetched_followees.append(x[0])
-            all_fetched_followers = get_followers(cursor, user_email)
+        second = " ORDER BY F.followee %s %s" % (order, limit)
+        query = first + second
+        cursor.execute(query)
+        all_followers = cursor.fetchall()
+        all_fetched_followees = []
+        for x in all_followers:
+            all_fetched_followees.append(x[0])
+        all_fetched_followers = get_followers(cursor, user_email)
 
-        if usr_info[0][3]:
-            anon = True
-        else:
-            anon = False
-        resp = {
-            "id": usr_info[0][0],
-            "email": usr_info[0][1],
-            "about": usr_info[0][2],
-            "isAnonymous": anon,
-            "name": usr_info[0][4],
-            "username": usr_info[0][5],
-            "followers": all_fetched_followers,
-            "following": all_fetched_followees
-        }
-        return jsonify(code=0, response=resp)
-    return jsonify(code=1, response="User doesn't exist")
+    if usr_info[0][3]:
+        anon = True
+    else:
+        anon = False
+    resp = {
+        "id": usr_info[0][0],
+        "email": usr_info[0][1],
+        "about": usr_info[0][2],
+        "isAnonymous": anon,
+        "name": usr_info[0][4],
+        "username": usr_info[0][5],
+        "followers": all_fetched_followers,
+        "following": all_fetched_followees
+    }
+    return jsonify(code=0, response=resp)
 
 
 def get_all_user_info(cursor, user):
     cursor.execute("SELECT * FROM User where email='%s'" % user)
     usr_info = cursor.fetchall()
-    if usr_info:
-        all_fetched_followers = get_followers(cursor, user)
-        all_fetched_followees = get_followees(cursor, user)
-        if usr_info[0][3]:
-            anon = True
-        else:
-            anon = False
-        resp = {
-            "id": usr_info[0][0],
-            "email": usr_info[0][1],
-            "about": usr_info[0][2],
-            "isAnonymous": anon,
-            "name": usr_info[0][4],
-            "username": usr_info[0][5],
-            "followers": all_fetched_followers,
-            "following": all_fetched_followees
-        }
-        return jsonify(code=0, response=resp)
-    return jsonify(code=1, response="User doesn't exist")
+    if not usr_info:
+        return jsonify(code=1, response="No such user")
+    all_fetched_followers = get_followers(cursor, user)
+    all_fetched_followees = get_followees(cursor, user)
+    if usr_info[0][3]:
+        anon = True
+    else:
+        anon = False
+    resp = {
+        "id": usr_info[0][0],
+        "email": usr_info[0][1],
+        "about": usr_info[0][2],
+        "isAnonymous": anon,
+        "name": usr_info[0][4],
+        "username": usr_info[0][5],
+        "followers": all_fetched_followers,
+        "following": all_fetched_followees
+    }
+    return jsonify(code=0, response=resp)
 
 
 def get_followers(cursor, followee):
