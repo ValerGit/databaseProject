@@ -212,6 +212,7 @@ def list_folowings(cursor, limit, order, since_id, user_email, is_follower):
             all_fetched_followees.append(x[0])
         all_fetched_followers = get_followers(cursor, user_email)
 
+    all_fetched_subscr = get_subscriptions(cursor, user_email)
     if usr_info[0][3]:
         anon = True
     else:
@@ -224,7 +225,8 @@ def list_folowings(cursor, limit, order, since_id, user_email, is_follower):
         "name": usr_info[0][4],
         "username": usr_info[0][5],
         "followers": all_fetched_followers,
-        "following": all_fetched_followees
+        "following": all_fetched_followees,
+        "subscriptions": all_fetched_subscr
     }
     return jsonify(code=0, response=resp)
 
@@ -236,6 +238,7 @@ def get_all_user_info(cursor, user):
         return jsonify(code=1, response="No such user")
     all_fetched_followers = get_followers(cursor, user)
     all_fetched_followees = get_followees(cursor, user)
+    all_fetched_subscr = get_subscriptions(cursor, user)
     if usr_info[0][3]:
         anon = True
     else:
@@ -248,9 +251,20 @@ def get_all_user_info(cursor, user):
         "name": usr_info[0][4],
         "username": usr_info[0][5],
         "followers": all_fetched_followers,
-        "following": all_fetched_followees
+        "following": all_fetched_followees,
+        "subscriptions": all_fetched_subscr
     }
     return jsonify(code=0, response=resp)
+
+
+def get_subscriptions(cursor, user_email):
+    cursor.execute("SELECT S.thread FROM Thread_Subscr S INNER JOIN Thread T ON T.id = S.thread "
+                   "WHERE S.user='%s' AND T.isClosed = 0 " % user_email)
+    all_subscr = cursor.fetchall()
+    all_fetched_subscr = []
+    for x in all_subscr:
+        all_fetched_subscr.append(x[0])
+    return all_fetched_subscr
 
 
 def get_followers(cursor, followee):
@@ -275,6 +289,7 @@ def get_user_info_external(cursor, user):
     cursor.execute("SELECT * FROM User where email='%s'" % user)
     usr_info = cursor.fetchall()
     resp = {}
+    all_fetched_subscr = get_subscriptions(cursor, user)
     if usr_info:
         all_fetched_followers = get_followers(cursor, user)
         all_fetched_followees = get_followees(cursor, user)
@@ -290,6 +305,7 @@ def get_user_info_external(cursor, user):
             "name": usr_info[0][4],
             "username": usr_info[0][5],
             "followers": all_fetched_followers,
-            "following": all_fetched_followees
+            "following": all_fetched_followees,
+            "subscriptions": all_fetched_subscr
         }
     return resp

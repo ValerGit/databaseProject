@@ -309,9 +309,6 @@ def thread_list():
     if not since:
         since = "1970-01-01"
 
-    thr_date = datetime.datetime.strptime(since, "%Y-%m-%d %H:%M:%S")
-    timestamp = time.mktime(thr_date.timetuple())
-
     limit = ""
     if request.args.get('limit'):
         limit = "LIMIT " + request.args.get('limit')
@@ -324,17 +321,58 @@ def thread_list():
         first_part= "SELECT * FROM Thread WHERE forum='%s'" % forum_short_name
     else:
         first_part = "SELECT * FROM Thread WHERE user='%s'" % user_email
-    second_part = " AND date >= %s ORDER BY date %s %s" % (timestamp, order, limit)
-    query = first_part + second_part
+    second_part = " AND date >= '%s'" % since
+    third_part = " ORDER BY date %s %s" % (order, limit)
+    query = first_part + second_part + third_part
     try:
         cursor.execute(query)
     except Exception:
         return jsonify(code=3, response="Wrong request")
+
     all_threads = cursor.fetchall()
     end_list = []
     for x in all_threads:
         end_list.append(get_thread_info(x))
     return jsonify(code=0, response=end_list)
+
+
+@thread_api.route('vote/', methods=['POST'])
+def thread_vote():
+    conn = mysql.get_db()
+    cursor = conn.cursor()
+    try:
+        req_json = request.get_json()
+    except BadRequest:
+        return jsonify(code=2, response="Cant parse json")
+
+    if not ('thread' in req_json and 'vote' in req_json):
+        return jsonify(code=3, response="Wrong request")
+    thread_id = req_json['thread']
+    vote_value = req_json['vote']
+
+    cursor.execute("SELECT likes, dislikes, points FROM Thread WHERE id='%s'" % thread_id)
+    likes_info = cursor.fetchall()
+    if not likes_info:
+        return jsonify(code=1, response="No such thread")
+    likes = likes_info[0][0]
+    dislikes = likes_info[0][1]
+    points = likes_info[0][2]
+
+    if vote_value == 1:
+        likes += 1
+        points += 1
+    elif vote_value == -1:
+        dislikes += 1
+        points -= 1
+    else:
+        return jsonify(code=3, response="Wrong request")
+    sql_update = (likes, dislikes, points, thread_id)
+    cursor.execute("UPDATE Thread SET likes=%s, dislikes=%s, points=%s WHERE id=%s", sql_update)
+    conn.commit()
+    cursor.execute("SELECT * FROM Thread WHERE id='%s'" % thread_id)
+    updated_thread = cursor.fetchall()
+    resp = get_thread_info(updated_thread[0])
+    return jsonify(code=0, responce=resp)
 
 
 def get_thread_info(thread):
@@ -396,3 +434,69 @@ def open_close_thread(is_closed, upd_or_open, thread_id):
     }
     cursor.close()
     return jsonify(code=0, response=resp)
+
+
+def get_thread_info_external(forum_short_name, since, limit, order, related):
+    conn = mysql.get_db()
+    cursor = conn.cursor()
+    query_first = "SELECT * FROM Thread WHERE forum='%s'" % forum_short_name
+    query_second = " AND date >= '%s'" % since
+    query_third = " ORDER BY date %s %s", (order, limit)
+    full_query = query_first + query_second + query_third
+    cursor.execute(full_query)
+    thread = cursor.fetchall()
+    if not thread:
+        return jsonify(code=1, response="No such thread")
+    all_threads = cursor.fetchall()
+    end_list = []
+    for x in all_threads:
+        end_list.append(get_thread_with_params(cursor, x, related))
+    return jsonify(code=0, response=end_list)
+
+
+def get_thread_with_params(cursor, thread, related):
+    thread_id = thread[0]
+    thread_forum = thread[1]
+    thread_title = thread[2]
+    thread_is_closed = thread[3]
+    thread_user = thread[4]
+    thread_date = datetime.datetime.strftime(thread[5], "%Y-%m-%d %H:%M:%S")
+    thread_msg = thread[6]
+    thread_slug = thread[7]
+    thread_is_del = thread[8]
+    thread_likes = thread[9]
+    thread_dislikes = thread[10]
+    thread_points = thread[11]
+
+    user_info = thread_user
+    forum_info = thread_forum
+    if related:
+        if related == 'user':
+            user_info = get_user_info_external(cursor, thread_user)
+
+        elif related == 'forum':
+            forum_info = get_forum_info_external(cursor, thread_forum)
+
+    is_closed = False
+    if thread_is_closed:
+        is_closed = True
+
+    is_del = False
+    if thread_is_del:
+        is_del = True
+
+    resp = {
+        "id": thread_id,
+        "forum": forum_info,
+        "title": thread_title,
+        "isClosed": is_closed,
+        "user": user_info,
+        "date": thread_date,
+        "message": thread_msg,
+        "slug": thread_slug,
+        "isDeleted": is_del,
+        "likes": thread_likes,
+        "dislikes": thread_dislikes,
+        "points": thread_points
+    }
+    return resp
