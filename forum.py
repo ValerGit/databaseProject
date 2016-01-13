@@ -1,7 +1,7 @@
 from werkzeug.exceptions import BadRequest
 from flask import jsonify, Blueprint, request
 from flaskext.mysql import MySQL
-from user import get_user_info_external
+from user import get_user_info_external, get_user_info_external_params
 import datetime
 
 forum_api = Blueprint('forum_api', __name__)
@@ -99,6 +99,28 @@ def forum_list_threads():
     related = request.args.get('related')
 
     return get_thread_info_external(forum_short_name, since, limit, order, related)
+
+
+@forum_api.route('listUsers/', methods=['GET'])
+def forum_list_users():
+    forum_short_name = request.args.get('forum')
+    if not forum_short_name:
+        return jsonify(code=3, response="Wrong request")
+
+    since_id = request.args.get('since_id')
+    if not since_id:
+        since_id = 1
+
+    limit = ""
+    if request.args.get('limit'):
+        limit = "LIMIT " + request.args.get('limit')
+
+    order = request.args.get('order')
+    if not order:
+        order = "DESC"
+    return get_user_info_external_params(forum_short_name, limit, order, since_id)
+    ####from posts!!!!!
+
 
 
 def get_forum_info_external(cursor, forum_short_name):

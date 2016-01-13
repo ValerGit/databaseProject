@@ -289,10 +289,10 @@ def get_user_info_external(cursor, user):
     cursor.execute("SELECT * FROM User where email='%s'" % user)
     usr_info = cursor.fetchall()
     resp = {}
-    all_fetched_subscr = get_subscriptions(cursor, user)
     if usr_info:
         all_fetched_followers = get_followers(cursor, user)
         all_fetched_followees = get_followees(cursor, user)
+        all_fetched_subscr = get_subscriptions(cursor, user)
         if usr_info[0][3]:
             anon = True
         else:
@@ -309,3 +309,39 @@ def get_user_info_external(cursor, user):
             "subscriptions": all_fetched_subscr
         }
     return resp
+
+
+def get_user_info_external_params(forum, limit, order, since_id):
+    conn = mysql.get_db()
+    cursor = conn.cursor()
+    query_first = "SELECT * FROM User where email='%s'" % forum
+    query_second = " AND id >='%s'" % since_id
+    query_third = " ORDER BY name %s %s" % (order, limit)
+    full_query = query_first + query_second + query_third
+    cursor.execute(full_query)
+    usr_info = cursor.fetchall()
+    resp = []
+    for usr in usr_info:
+        resp.append(extract_user_info(cursor, usr))
+    return jsonify(code=0, response=resp)
+
+
+def extract_user_info(cursor, user):
+    all_fetched_followers = get_followers(cursor, user)
+    all_fetched_followees = get_followees(cursor, user)
+    all_fetched_subscr = get_subscriptions(cursor, user)
+    if user [3]:
+        anon = True
+    else:
+        anon = False
+    resp = {
+        "id": user[0],
+        "email": user[1],
+        "about": user[2],
+        "isAnonymous": anon,
+        "name": user[4],
+        "username": user[5],
+        "followers": all_fetched_followers,
+        "following": all_fetched_followees,
+        "subscriptions": all_fetched_subscr
+    }
