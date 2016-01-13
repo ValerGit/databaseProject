@@ -1,7 +1,7 @@
 from werkzeug.exceptions import BadRequest
 from flask import jsonify, Blueprint, request
 from flaskext.mysql import MySQL
-
+import datetime
 user_api = Blueprint('user_api', __name__)
 mysql = MySQL()
 
@@ -184,6 +184,67 @@ def user_followings_list():
     return list_folowings(cursor, limit, order, since_id, user_email, 0)
 
 
+@user_api.route('listPosts/', methods=['GET'])
+def user_list_posts():
+    conn = mysql.get_db()
+    cursor = conn.cursor()
+    user_email = request.args.get('user')
+    if not user_email:
+        return jsonify(code=3, response="Wrong request")
+
+    since = request.args.get('since')
+    if not since:
+        since = "1970-01-01"
+
+    limit = ""
+    if request.args.get('limit'):
+        limit = "LIMIT " + request.args.get('limit')
+
+    order = request.args.get('order')
+    if not order:
+        order = "DESC"
+
+    query_first = "SELECT * FROM Post WHERE user='%s'" % user_email
+    query_second = " AND date >= '%s'" % since
+    query_third = " ORDER BY date %s %s" % (order, limit)
+    full_query = query_first + query_second + query_third
+    cursor.execute(full_query)
+    all_posts = cursor.fetchall()
+    if not all_posts:
+        return jsonify(code=1, response="No posts found")
+    end_list = []
+    for x in all_posts:
+        end_list.append(get_post_info(x))
+    return jsonify(code=0, responce=end_list)
+
+
+def get_post_info(post_info):
+    resp = {
+        "date": datetime.datetime.strftime(post_info[1], "%Y-%m-%d %H:%M:%S"),
+        "dislikes": post_info[13],
+        "forum": post_info[5],
+        "id": post_info[0],
+        "isApproved": true_false_ret(post_info[7]),
+        "isDeleted": true_false_ret(post_info[11]),
+        "isEdited": true_false_ret(post_info[9]),
+        "isHighlighted": true_false_ret(post_info[8]),
+        "isSpam": true_false_ret(post_info[10]),
+        "likes": post_info[12],
+        "message": post_info[3],
+        "parent": post_info[4],
+        "points": post_info[14],
+        "thread": post_info[2],
+        "user": post_info[4]
+    }
+    return resp
+
+
+def true_false_ret(value):
+    if value == 0:
+        return False
+    return True
+
+
 def list_folowings(cursor, limit, order, since_id, user_email, is_follower):
     cursor.execute("SELECT * FROM User where email='%s'" % user_email)
     usr_info = cursor.fetchall()
@@ -304,6 +365,31 @@ def get_user_info_external(cursor, user):
             "isAnonymous": anon,
             "name": usr_info[0][4],
             "username": usr_info[0][5],
+            "followers": all_fetched_followers,
+            "following": all_fetched_followees,
+            "subscriptions": all_fetched_subscr
+        }
+    return resp
+
+
+def get_user_info_external_by_input(cursor, user):
+    resp = {}
+    if user:
+        email = user[1]
+        all_fetched_followers = get_followers(cursor, email)
+        all_fetched_followees = get_followees(cursor, email)
+        all_fetched_subscr = get_subscriptions(cursor, email)
+        if user[3]:
+            anon = True
+        else:
+            anon = False
+        resp = {
+            "id": user[0],
+            "email": user[1],
+            "about": user[2],
+            "isAnonymous": anon,
+            "name": user[4],
+            "username": user[5],
             "followers": all_fetched_followers,
             "following": all_fetched_followees,
             "subscriptions": all_fetched_subscr

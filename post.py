@@ -1,8 +1,10 @@
 from werkzeug.exceptions import BadRequest
 from flask import jsonify, Blueprint, request
 from flaskext.mysql import MySQL
-import re
-
+import re, datetime
+from user import get_user_info_external
+from forum import get_forum_info_external
+from threaad import get_thread_info_external
 post_api = Blueprint('post_api', __name__)
 mysql = MySQL()
 
@@ -31,16 +33,255 @@ def post_create():
     new_post_is_spam = 0
     new_post_is_del = 0
     new_post_parent_id = 0
+
     if 'parent' in req_json:
         new_post_parent_id = req_json['parent']
     new_post_path = get_post_path(cursor, new_post_parent_id)
+
+    if 'isApproved' in req_json and req_json['isApproved']:
+            new_post_is_approved = 1
+    if 'isHighlighted' in req_json and req_json['isHighlighted']:
+            new_post_is_high = 1
+    if 'isEdited' in req_json and req_json['isEdited']:
+        new_post_is_edited = 1
+    if 'isSpam' in req_json and req_json['isSpam']:
+        new_post_is_spam = 1
+    if 'isDeleted' in req_json and req_json['isDeleted']:
+        new_post_is_del = 1
+
     sql_data = (new_post_date, new_post_thread_id, new_post_message, new_post_user_email, new_post_forum_short_name,
                 new_post_parent_id, new_post_is_approved, new_post_is_high, new_post_is_edited, new_post_is_spam,
                 new_post_is_del, new_post_path)
-    cursor.execute("INSERT INTO Post VALUES (null,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,0,0,0,%s)", sql_data)
-    conn.commit()
-    return jsonify(resp = 0)
+    try:
+        cursor.execute("INSERT INTO Post VALUES (null,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,0,0,0,%s)", sql_data)
+        conn.commit()
+    except Exception:
+        return jsonify(code=3, response="Wrong request")
+    resp = {
+        "date": new_post_date,
+        "forum": new_post_forum_short_name,
+        "id": cursor.lastrowid,
+        "isApproved": true_false_ret(new_post_is_approved),
+        "isDeleted": true_false_ret(new_post_is_del),
+        "isEdited": true_false_ret(new_post_is_edited),
+        "isHighlighted": true_false_ret(new_post_is_high),
+        "isSpam": true_false_ret(new_post_is_spam),
+        "message": new_post_message,
+        "parent": new_post_parent_id,
+        "thread": new_post_thread_id,
+        "user": new_post_user_email
+    }
+    return jsonify(code=0, responce=resp)
 
+
+@post_api.route('details/', methods=['GET'])
+def post_details():
+    conn = mysql.get_db()
+    cursor = conn.cursor()
+    post_id = request.args.get('post')
+    if not post_id:
+        return jsonify(code=3, response="Wrong request")
+
+    cursor.execute("SELECT * FROM Post WHERE id='%s'" % post_id)
+    post_info = cursor.fetchall()[0]
+    if not post_info:
+        return jsonify(code=3, response="Wrong request")
+    thread_info = post_info[2]
+    user_info = post_info[4]
+    forum_info = post_info[5]
+    related = request.args.get('related')
+    if related:
+        if related == 'user':
+            user_info = get_user_info_external(cursor, post_info[4])
+
+        if related == 'forum':
+            forum_info = get_forum_info_external(cursor, post_info[5])
+
+        if related == 'thread':
+            thread_info = get_thread_info_external(cursor, post_info[2])
+
+    resp = {
+        "date": post_info[1],
+        "dislikes": post_info[13],
+        "forum": forum_info,
+        "id": post_info[0],
+        "isApproved": true_false_ret(post_info[7]),
+        "isDeleted": true_false_ret(post_info[11]),
+        "isEdited": true_false_ret(post_info[9]),
+        "isHighlighted": true_false_ret(post_info[8]),
+        "isSpam": true_false_ret(post_info[10]),
+        "likes": post_info[12],
+        "message": post_info[3],
+        "parent": post_info[4],
+        "points": post_info[14],
+        "thread": thread_info,
+        "user": user_info
+    }
+    return jsonify(code=0, responce=resp)
+
+
+@post_api.route('list/', methods=['GET'])
+def post_list():
+    conn = mysql.get_db()
+    cursor = conn.cursor()
+    forum_short_name = request.args.get('forum')
+    thread_id = request.args.get('thread')
+    if not (forum_short_name or thread_id):
+        return jsonify(code=3, response="Wrong request")
+
+    since = request.args.get('since')
+    if not since:
+        since = "1970-01-01"
+
+    limit = ""
+    if request.args.get('limit'):
+        limit = "LIMIT " + request.args.get('limit')
+
+    order = request.args.get('order')
+    if not order:
+        order = "DESC"
+
+    if forum_short_name:
+        query_first = "SELECT * FROM Post WHERE forum='%s'" % forum_short_name
+    elif thread_id:
+        query_first = "SELECT * FROM Post WHERE thread='%s'" % thread_id
+    query_second = " AND date >= '%s'" % since
+    query_third = " ORDER BY date %s %s" % (order, limit)
+    full_query = query_first + query_second + query_third
+    cursor.execute(full_query)
+    all_posts = cursor.fetchall()
+    if not all_posts:
+        return jsonify(code=1, response="No posts found")
+    end_list = []
+    for x in all_posts:
+        end_list.append(get_post_info(x))
+
+    return jsonify(code=0, responce=end_list)
+
+
+@post_api.route('remove/', methods=['POST'])
+def post_set_deleted():
+    try:
+        req_json = request.get_json()
+    except BadRequest:
+        return jsonify(code=2, response="Cant parse json")
+
+    if not ('post' in req_json):
+        return jsonify(code=3, response="Wrong request")
+
+    post_id = req_json['post']
+    return open_close_post(1, post_id)
+
+
+@post_api.route('restore/', methods=['POST'])
+def post_set_active():
+    try:
+        req_json = request.get_json()
+    except BadRequest:
+        return jsonify(code=2, response="Cant parse json")
+
+    if not ('post' in req_json):
+        return jsonify(code=3, response="Wrong request")
+
+    post_id = req_json['post']
+    return open_close_post(0, post_id)
+
+
+@post_api.route('update/', methods=['POST'])
+def post_update():
+    conn = mysql.get_db()
+    cursor = conn.cursor()
+    try:
+        req_json = request.get_json()
+    except BadRequest:
+        return jsonify(code=2, response="Cant parse json")
+    if not ('post' in req_json and 'message' in req_json):
+        return jsonify(code=3, response="Wrong request")
+    post_id = req_json['post']
+    new_message = req_json['message']
+    cursor.execute("UPDATE Post SET message=%s WHERE id=%s", (new_message, post_id))
+    conn.commit()
+    cursor.execute("SELECT * FROM Post WHERE id='%s'" % post_id)
+    post_info = cursor.fetchall()[0]
+    if not post_info:
+        return jsonify(code=1, response="Can't find this post")
+    resp = get_post_info(post_info)
+    return jsonify(code=0, response=resp)
+
+
+@post_api.route('vote/', methods=['POST'])
+def post_vote():
+    conn = mysql.get_db()
+    cursor = conn.cursor()
+    try:
+        req_json = request.get_json()
+    except BadRequest:
+        return jsonify(code=2, response="Cant parse json")
+
+    if not ('post' in req_json and 'vote' in req_json):
+        return jsonify(code=3, response="Wrong request")
+    post_id = req_json['post']
+    vote_value = req_json['vote']
+
+    cursor.execute("SELECT likes, dislikes, points FROM Post WHERE id='%s'" % post_id)
+    likes_info = cursor.fetchall()
+    if not likes_info:
+        return jsonify(code=1, response="No such thread")
+    likes = likes_info[0][0]
+    dislikes = likes_info[0][1]
+    points = likes_info[0][2]
+
+    if vote_value == 1:
+        likes += 1
+        points += 1
+    elif vote_value == -1:
+        dislikes += 1
+        points -= 1
+    else:
+        return jsonify(code=3, response="Wrong request")
+    sql_update = (likes, dislikes, points, post_id)
+    cursor.execute("UPDATE Post SET likes=%s, dislikes=%s, points=%s WHERE id=%s", sql_update)
+    conn.commit()
+    cursor.execute("SELECT * FROM Post WHERE id='%s'" % post_id)
+    updated_thread = cursor.fetchall()
+    resp = get_post_info(updated_thread[0])
+    return jsonify(code=0, responce=resp)
+
+
+def open_close_post(is_del, post_id):
+    conn = mysql.get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM Post WHERE id='%s'" % post_id)
+    if not cursor.fetchall():
+         return jsonify(code=1, response="Can't find this post")
+    cursor.execute("UPDATE Post SET isDeleted=%s WHERE id=%s", (is_del, post_id))
+    conn.commit()
+    resp = {
+        "post": post_id
+    }
+    cursor.close()
+    return jsonify(code=0, response=resp)
+
+
+def get_post_info(post_info):
+    resp = {
+        "date": datetime.datetime.strftime(post_info[1], "%Y-%m-%d %H:%M:%S"),
+        "dislikes": post_info[13],
+        "forum": post_info[5],
+        "id": post_info[0],
+        "isApproved": true_false_ret(post_info[7]),
+        "isDeleted": true_false_ret(post_info[11]),
+        "isEdited": true_false_ret(post_info[9]),
+        "isHighlighted": true_false_ret(post_info[8]),
+        "isSpam": true_false_ret(post_info[10]),
+        "likes": post_info[12],
+        "message": post_info[3],
+        "parent": post_info[4],
+        "points": post_info[14],
+        "thread": post_info[2],
+        "user": post_info[4]
+    }
+    return resp
 
 def get_post_path(cursor, new_post_parent_id):
     if new_post_parent_id:
@@ -73,3 +314,9 @@ def get_post_path(cursor, new_post_parent_id):
         else:
             new_post_path = '{0:06d}'.format(1)
     return new_post_path
+
+
+def true_false_ret(value):
+    if value == 0:
+        return False
+    return True

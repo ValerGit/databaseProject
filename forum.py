@@ -1,7 +1,7 @@
 from werkzeug.exceptions import BadRequest
 from flask import jsonify, Blueprint, request
 from flaskext.mysql import MySQL
-from user import get_user_info_external, get_user_info_external_params
+from user import get_user_info_external, get_user_info_external_by_input
 import datetime
 
 forum_api = Blueprint('forum_api', __name__)
@@ -103,6 +103,8 @@ def forum_list_threads():
 
 @forum_api.route('listUsers/', methods=['GET'])
 def forum_list_users():
+    conn = mysql.get_db()
+    cursor = conn.cursor()
     forum_short_name = request.args.get('forum')
     if not forum_short_name:
         return jsonify(code=3, response="Wrong request")
@@ -118,9 +120,20 @@ def forum_list_users():
     order = request.args.get('order')
     if not order:
         order = "DESC"
-    return get_user_info_external_params(forum_short_name, limit, order, since_id)
-    ####from posts!!!!!
 
+    query_first = "SELECT U.id, U.email, U.about, U.isAnonymous, U.name, U.username " \
+                  "FROM User U INNER JOIN Post P WHERE P.forum='%s'" % forum_short_name
+    query_second = " AND U.id >= '%s'" % since_id
+    query_third = " ORDER BY U.name %s %s" % (order, limit)
+    full_query = query_first + query_second + query_third
+    cursor.execute(full_query)
+    user_infos = cursor.fetchall()
+    if not user_infos:
+        return jsonify(code=1, response="No such users")
+    end_list = []
+    for x in user_infos:
+        end_list.append(get_user_info_external_by_input(cursor, x))
+    return jsonify(code=0, response=end_list)
 
 
 def get_forum_info_external(cursor, forum_short_name):
