@@ -2,9 +2,10 @@ from werkzeug.exceptions import BadRequest
 from flask import jsonify, Blueprint, request
 from flaskext.mysql import MySQL
 import re, datetime
-from user import get_user_info_external
-from forum import get_forum_info_external
-from threaad import get_thread_info_external
+from utilities import get_user_info_external, get_forum_info_external, \
+    get_thread_info_external, get_post_info_by_post, true_false_ret
+
+
 post_api = Blueprint('post_api', __name__)
 mysql = MySQL()
 
@@ -37,7 +38,6 @@ def post_create():
     if 'parent' in req_json:
         new_post_parent_id = req_json['parent']
     new_post_path = get_post_path(cursor, new_post_parent_id)
-
     if 'isApproved' in req_json and req_json['isApproved']:
             new_post_is_approved = 1
     if 'isHighlighted' in req_json and req_json['isHighlighted']:
@@ -145,16 +145,15 @@ def post_list():
         query_first = "SELECT * FROM Post WHERE forum='%s'" % forum_short_name
     elif thread_id:
         query_first = "SELECT * FROM Post WHERE thread='%s'" % thread_id
-    query_second = " AND date >= '%s'" % since
-    query_third = " ORDER BY date %s %s" % (order, limit)
-    full_query = query_first + query_second + query_third
+    query_second = " AND date >= '%s' ORDER BY date %s %s" % (since, order, limit)
+    full_query = query_first + query_second
     cursor.execute(full_query)
     all_posts = cursor.fetchall()
     if not all_posts:
         return jsonify(code=1, response="No posts found")
     end_list = []
     for x in all_posts:
-        end_list.append(get_post_info(x))
+        end_list.append(get_post_info_by_post(x))
 
     return jsonify(code=0, responce=end_list)
 
@@ -205,7 +204,7 @@ def post_update():
     post_info = cursor.fetchall()[0]
     if not post_info:
         return jsonify(code=1, response="Can't find this post")
-    resp = get_post_info(post_info)
+    resp = get_post_info_by_post(post_info)
     return jsonify(code=0, response=resp)
 
 
@@ -230,7 +229,6 @@ def post_vote():
     likes = likes_info[0][0]
     dislikes = likes_info[0][1]
     points = likes_info[0][2]
-
     if vote_value == 1:
         likes += 1
         points += 1
@@ -244,7 +242,7 @@ def post_vote():
     conn.commit()
     cursor.execute("SELECT * FROM Post WHERE id='%s'" % post_id)
     updated_thread = cursor.fetchall()
-    resp = get_post_info(updated_thread[0])
+    resp = get_post_info_by_post(updated_thread[0])
     return jsonify(code=0, responce=resp)
 
 
@@ -262,26 +260,6 @@ def open_close_post(is_del, post_id):
     cursor.close()
     return jsonify(code=0, response=resp)
 
-
-def get_post_info(post_info):
-    resp = {
-        "date": datetime.datetime.strftime(post_info[1], "%Y-%m-%d %H:%M:%S"),
-        "dislikes": post_info[13],
-        "forum": post_info[5],
-        "id": post_info[0],
-        "isApproved": true_false_ret(post_info[7]),
-        "isDeleted": true_false_ret(post_info[11]),
-        "isEdited": true_false_ret(post_info[9]),
-        "isHighlighted": true_false_ret(post_info[8]),
-        "isSpam": true_false_ret(post_info[10]),
-        "likes": post_info[12],
-        "message": post_info[3],
-        "parent": post_info[4],
-        "points": post_info[14],
-        "thread": post_info[2],
-        "user": post_info[4]
-    }
-    return resp
 
 def get_post_path(cursor, new_post_parent_id):
     if new_post_parent_id:
@@ -314,9 +292,3 @@ def get_post_path(cursor, new_post_parent_id):
         else:
             new_post_path = '{0:06d}'.format(1)
     return new_post_path
-
-
-def true_false_ret(value):
-    if value == 0:
-        return False
-    return True

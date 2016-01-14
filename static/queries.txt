@@ -1,0 +1,88 @@
+______________________________________________________________________________________
+
+User
+
+curl -H "Content-Type: application/json" -X POST -d '{"username": "Saroka", "about": "hello im use", "isAnonymous": false, "name": "Sara", "email": "ara@mail.ru"}' http://127.0.0.1:5000/db/api/user/create/
+
+
+curl -H "Content-Type: application/json" -X POST -d '{"follower": "one@mail.ru", "followee": "two@mail.ru"}' http://127.0.0.1:5000/db/api/user/follow/
+
+
+curl -H "Content-Type: application/json" -X POST -d '{"follower": "one@mail.ru", "followee": "two@mail.ru"}' http://127.0.0.1:5000/db/api/user/unfollow/
+
+curl -H "Content-Type: application/json" -X POST -d '{"about": "Wowowowow!!!", "user": "one@mail.ru", "name": "HElllooo"}' http://127.0.0.1:5000/db/api/user/updateProfile/
+
+http://127.0.0.1:5000/db/api/user/details/?user=one%40mail.ru
+
+http://127.0.0.1:5000/db/api/user/listFollowers/?user=two%40mail.ru&order=asc&since_id=20&limit=1
+
+http://127.0.0.1:5000/db/api/user/listFollowing/?user=two%40mail.ru&order=asc&since_id=15
+
+http://127.0.0.1:5000/db/api/user/listPosts/?user=one@mail.ru
+______________________________________________________________________________________
+______________________________________________________________________________________
+
+Forum
+
+curl -H "Content-Type: application/json" -X POST -d '{"name": "Forum supaspupas", "short_name": "for", "user": "two@mail.ru"}' http://127.0.0.1:5000/db/api/forum/create/
+
+http://127.0.0.1:5000/db/api/forum/details/?forum=forum2&related=user
+
+http://127.0.0.1:5000/db/api/forum/listThreads/?related=forum&since=2013-12-31+00%3A00%3A00&order=desc&forum=forum1
+
+______________________________________________________________________________________
+______________________________________________________________________________________
+
+Thread
+
+curl -H "Content-Type: application/json" -X POST -d '{"forum": "for", "title": "Thread With Sufficiently Large Title", "isClosed": true, "user": "exampls@mail.ru", "date": "2010-01-01 23:01:00", "message": "hey hey hey hey!", "slug": "Threadwithsufficientlylargetitle", "isDeleted": 1}' http://127.0.0.1:5000/db/api/thread/create/
+
+
+http://127.0.0.1:5000/db/api/thread/details/?thread=1&related=user
+
+curl -H "Content-Type: application/json" -X POST -d '{"thread": 1}' http://127.0.0.1:5000/db/api/thread/close/
+
+curl -H "Content-Type: application/json" -X POST -d '{"thread": 21}' http://127.0.0.1:5000/db/api/thread/open/
+
+curl -H "Content-Type: application/json" -X POST -d '{"thread": 1}' http://127.0.0.1:5000/db/api/thread/restore/
+
+curl -H "Content-Type: application/json" -X POST -d '{"jjjfddfhread": 21}' http://127.0.0.1:5000/db/api/thread/remove/
+
+
+curl -H "Content-Type: application/json" -X POST -d '{"message": "gey gay hey hey!", "slug": "newslug", "thread": 2}' http://127.0.0.1:5000/db/api/thread/update/
+
+curl -H "Content-Type: application/json" -X POST -d '{"user": "one@mail.ru", "thread": 6}' http://127.0.0.1:5000/db/api/thread/subscribe/
+
+curl -H "Content-Type: application/json" -X POST -d '{"user": "occcne@mail.ru", "thread": 2}' http://127.0.0.1:5000/db/api/thread/unsubscribe/
+
+curl -H "Content-Type: application/json" -X POST -d '{"vote": 1, "thread": 2}' http://127.0.0.1:5000/db/api/thread/vote/
+
+
+SELECT S.thread FROM Thread_Subscr S INNER JOIN Thread T ON T.id = S.thread WHERE S.user='one@mail.ru' AND T.isClosed = 0 
+    # thr_date = datetime.datetime.strptime(new_thread_date, "%Y-%m-%d %H:%M:%S")
+    # timestamp = mktime(thr_date.timetuple())
+
+______________________________________________________________________________________
+______________________________________________________________________________________
+Post
+
+
+curl -H "Content-Type: application/json" -X POST -d '{"isApproved": true, "user": "one@mail.ru ", "date": "2014-01-01 00:00:01", "message": "my answer 1", "isSpam": false,  "thread": 12, "forum": "forum1", "isDeleted": false, "isEdited": true}' http://127.0.0.1:5000/db/api/post/create/
+
+http://127.0.0.1:5000/db/api/post/details/?post=3
+
+http://127.0.0.1:5000/db/api/post/list/?thread=12&limit=3
+
+curl -H "Content-Type: application/json" -X POST -d '{"post": 3}' http://127.0.0.1:5000/db/api/post/remove/
+
+curl -H "Content-Type: application/json" -X POST -d '{"post": 3}' http://127.0.0.1:5000/db/api/post/restore/
+
+curl -H "Content-Type: application/json" -X POST -d '{"post": 5, "message": "updated message number 5"}' http://127.0.0.1:5000/db/api/post/update/
+
+curl -H "Content-Type: application/json" -X POST -d '{"vote": -1, "post": 1}' http://127.0.0.1:5000/db/api/post/vote/
+
+
+http://127.0.0.1:5000/db/api/forum/listUsers/?order=desc&forum=forum1
+
+http://127.0.0.1:5000/db/api/thread/listPosts/?thread=12&sort=tree
+
