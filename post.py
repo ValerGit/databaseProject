@@ -2,6 +2,7 @@ from werkzeug.exceptions import BadRequest
 from flask import jsonify, Blueprint, request
 from flaskext.mysql import MySQL
 import re, datetime
+import json
 from utilities import get_user_info_external, get_forum_info_external, \
     get_thread_info_external, get_post_info_by_post, true_false_ret
 
@@ -38,6 +39,7 @@ def post_create():
     if 'parent' in req_json:
         new_post_parent_id = req_json['parent']
     new_post_path = get_post_path(cursor, new_post_parent_id)
+
     if 'isApproved' in req_json and req_json['isApproved']:
             new_post_is_approved = 1
     if 'isHighlighted' in req_json and req_json['isHighlighted']:
@@ -67,11 +69,20 @@ def post_create():
         "isHighlighted": true_false_ret(new_post_is_high),
         "isSpam": true_false_ret(new_post_is_spam),
         "message": new_post_message,
-        "parent": new_post_parent_id,
+        "parent": zero_check(new_post_parent_id),
         "thread": new_post_thread_id,
-        "user": new_post_user_email
+        "user": new_post_user_email,
+        "likes": 0,
+        "dislikes": 0,
+        "points": 0
     }
-    return jsonify(code=0, responce=resp)
+    return jsonify(code=0, response=resp)
+
+
+def zero_check(value):
+    if int(value) == 0:
+        return None
+    return value
 
 
 @post_api.route('details/', methods=['GET'])
@@ -81,27 +92,32 @@ def post_details():
     post_id = request.args.get('post')
     if not post_id:
         return jsonify(code=3, response="Wrong request")
-
-    cursor.execute("SELECT * FROM Post WHERE id='%s'" % post_id)
-    post_info = cursor.fetchall()[0]
-    if not post_info:
-        return jsonify(code=3, response="Wrong request")
+    if int(post_id) < 0:
+        cursor.execute("SELECT max(id) FROM Post")
+        info = cursor.fetchall()
+        if info:
+            post_id = int(info[0][0]) + int(post_id) + 1
+    try:
+        cursor.execute("SELECT * FROM Post WHERE id='%s'" % post_id)
+    except Exception:
+         return jsonify(code=3, response="Wrong request")
+    post = cursor.fetchall()
+    if not post:
+        return jsonify(code=1, response="User doesn't exist")
+    post_info = post[0]
     thread_info = post_info[2]
     user_info = post_info[4]
     forum_info = post_info[5]
-    related = request.args.get('related')
-    if related:
-        if related == 'user':
-            user_info = get_user_info_external(cursor, post_info[4])
-
-        if related == 'forum':
-            forum_info = get_forum_info_external(cursor, post_info[5])
-
-        if related == 'thread':
-            thread_info = get_thread_info_external(cursor, post_info[2])
+    related = request.args.getlist('related')
+    if 'user' in related:
+        user_info = get_user_info_external(cursor, post_info[4])
+    if 'forum' in related:
+        forum_info = get_forum_info_external(cursor, post_info[5])
+    if 'thread' in related:
+        thread_info = get_thread_info_external(cursor, post_info[2])
 
     resp = {
-        "date": post_info[1],
+        "date": datetime.datetime.strftime(post_info[1], "%Y-%m-%d %H:%M:%S"),
         "dislikes": post_info[13],
         "forum": forum_info,
         "id": post_info[0],
@@ -112,12 +128,12 @@ def post_details():
         "isSpam": true_false_ret(post_info[10]),
         "likes": post_info[12],
         "message": post_info[3],
-        "parent": post_info[4],
+        "parent": zero_check(post_info[6]),
         "points": post_info[14],
         "thread": thread_info,
         "user": user_info
     }
-    return jsonify(code=0, responce=resp)
+    return jsonify(code=0, response=resp)
 
 
 @post_api.route('list/', methods=['GET'])
@@ -150,12 +166,11 @@ def post_list():
     cursor.execute(full_query)
     all_posts = cursor.fetchall()
     if not all_posts:
-        return jsonify(code=1, response="No posts found")
+        return jsonify(code=3, response="No posts found")
     end_list = []
     for x in all_posts:
         end_list.append(get_post_info_by_post(x))
-
-    return jsonify(code=0, responce=end_list)
+    return jsonify(code=0, response=end_list)
 
 
 @post_api.route('remove/', methods=['POST'])
@@ -243,7 +258,7 @@ def post_vote():
     cursor.execute("SELECT * FROM Post WHERE id='%s'" % post_id)
     updated_thread = cursor.fetchall()
     resp = get_post_info_by_post(updated_thread[0])
-    return jsonify(code=0, responce=resp)
+    return jsonify(code=0, response=resp)
 
 
 def open_close_post(is_del, post_id):
@@ -262,9 +277,10 @@ def open_close_post(is_del, post_id):
 
 
 def get_post_path(cursor, new_post_parent_id):
-    if new_post_parent_id:
-        cursor.execute("SELECT path FROM Post WHERE id='%s'" % new_post_parent_id)
-        parent_path = cursor.fetchall()[0][0]
+    cursor.execute("SELECT path FROM Post WHERE id='%s'" % new_post_parent_id)
+    info = cursor.fetchall()
+    if info:
+        parent_path = info[0][0]
         query_sub_path = parent_path + '.______'
         cursor.execute("SELECT max(path) FROM Post WHERE path LIKE '%s'" % query_sub_path)
         biggest_child_path = cursor.fetchall()[0][0]
@@ -282,7 +298,6 @@ def get_post_path(cursor, new_post_parent_id):
         new_post_path = str_end
 
     else:
-        new_post_parent_id = 0
         cursor.execute("SELECT max(path) FROM Post WHERE path LIKE '______'")
         biggest_post = cursor.fetchall()[0][0]
         if biggest_post is not None:

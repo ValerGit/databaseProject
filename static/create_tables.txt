@@ -1,6 +1,15 @@
+| user  | CREATE TABLE `user` (
+  `id` int(10) NOT NULL AUTO_INCREMENT,
+  `email` varchar(30) NOT NULL,
+  `about` varchar(30) DEFAULT NULL,
+  `isAnonymous` tinyint(1) NOT NULL,
+  `name` varchar(30) NOT NULL,
+  `username` varchar(30) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `email` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 |
 
-
-CREATE TABLE User ( id int(10) NOT NULL AUTO_INCREMENT, email VARCHAR(30) NOT NULL, about VARCHAR(30), isAnonymous TINYINT(1) NOT NULL, name VARCHAR(30) NOT NULL, username VARCHAR(30) NOT NULL, PRIMARY KEY(id), UNIQUE KEY email (email) );
+CREATE TABLE User ( id int(10) NOT NULL AUTO_INCREMENT, email VARCHAR(30) NOT NULL, about VARCHAR(4300), isAnonymous TINYINT(1) NOT NULL, name VARCHAR(30) NOT NULL, username VARCHAR(30) NOT NULL, PRIMARY KEY(id), UNIQUE KEY email (email) );
 
 
 CREATE TABLE Following (followee VARCHAR(30) NOT NULL, follower VARCHAR (30) NOT NULL, FOREIGN KEY followee(followee) REFERENCES User(email), FOREIGN KEY follower(follower) REFERENCES User(email));
@@ -9,17 +18,43 @@ CREATE TABLE Following (followee VARCHAR(30) NOT NULL, follower VARCHAR (30) NOT
 CREATE TABLE Forum (id int(10) NOT NULL AUTO_INCREMENT, name VARCHAR(255) NOT NULL, short_name VARCHAR(255) NOT NULL, user VARCHAR(30) NOT NULL, FOREIGN KEY(user) REFERENCES User (email), PRIMARY KEY (id), UNIQUE KEY name(name), UNIQUE KEY short_name(short_name));
 
 
-CREATE TABLE Thread (id int(10) NOT NULL AUTO_INCREMENT, forum VARCHAR(255) NOT NULL, title VARCHAR(255) NOT NULL, isClosed TINYINT(1) NOT NULL, user VARCHAR(30) NOT NULL, date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, message VARCHAR(255) NOT NULL, slug VARCHAR(100) NOT NULL, isDeleted TINYINT(1) NOT NULL, likes INT(10) NOT NULL, dislikes INT(10) NOT NULL, points INT(10) NOT NULL, PRIMARY KEY(id), FOREIGN KEY forum(forum) REFERENCES Forum(short_name), FOREIGN KEY user(user) REFERENCES User(email)) ;
+CREATE TABLE Thread (id int(10) NOT NULL AUTO_INCREMENT, forum VARCHAR(255) NOT NULL, title VARCHAR(255) NOT NULL, isClosed TINYINT(1) NOT NULL, user VARCHAR(30) NOT NULL, date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, message VARCHAR(4000) NOT NULL, slug VARCHAR(100) NOT NULL, isDeleted TINYINT(1) NOT NULL, likes INT(10) NOT NULL, dislikes INT(10) NOT NULL, points INT(10) NOT NULL, PRIMARY KEY(id), FOREIGN KEY forum(forum) REFERENCES Forum(short_name), FOREIGN KEY user(user) REFERENCES User(email)) ;
 
 
 CREATE TABLE Thread_Subscr (user VARCHAR(30) NOT NULL, thread INT(10) NOT NULL, FOREIGN KEY user(user) REFERENCES User(email), FOREIGN KEY thread(thread) REFERENCES Thread(id));
 
 
+| post  | CREATE TABLE `post` (
+  `id` int(10) NOT NULL AUTO_INCREMENT,
+  `date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `thread` int(10) NOT NULL,
+  `message` varchar(255) NOT NULL,
+  `user` varchar(30) NOT NULL,
+  `forum` varchar(30) NOT NULL,
+  `parent` int(10) NOT NULL DEFAULT '0',
+  `isApproved` tinyint(1) NOT NULL DEFAULT '0',
+  `isHighlighted` tinyint(1) NOT NULL DEFAULT '0',
+  `isEdited` tinyint(1) NOT NULL DEFAULT '0',
+  `isSpam` tinyint(1) NOT NULL DEFAULT '0',
+  `isDeleted` tinyint(1) NOT NULL DEFAULT '0',
+  `likes` int(10) NOT NULL DEFAULT '0',
+  `dislikes` int(10) NOT NULL DEFAULT '0',
+  `points` int(10) NOT NULL DEFAULT '0',
+  `path` varchar(60) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `forum` (`forum`),
+  KEY `thread` (`thread`),
+  KEY `user` (`user`),
+  CONSTRAINT `post_ibfk_1` FOREIGN KEY (`forum`) REFERENCES `Forum` (`short_name`),
+  CONSTRAINT `post_ibfk_2` FOREIGN KEY (`thread`) REFERENCES `Thread` (`id`),
+  CONSTRAINT `post_ibfk_3` FOREIGN KEY (`user`) REFERENCES `User` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 |
+
 CREATE TABLE Post (
 id INT(10) NOT NULL AUTO_INCREMENT,
 date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 thread INT(10) NOT NULL,
-message VARCHAR(255) NOT NULL,
+message VARCHAR(13000) NOT NULL,
 user VARCHAR(30) NOT NULL,
 forum VARCHAR(30) NOT NULL,
 parent INT(10) NOT NULL DEFAULT 0,
@@ -41,5 +76,3 @@ FOREIGN KEY user(user) REFERENCES User(email)
 ALTER TABLE Post ADD CONSTRAINT fk_parent
 FOREIGN KEY (parent) REFERENCES Post(id);
 
-
-insert into post values (null, '1980-02-02', 2, 'Hola!', 'one@mail.ru', 'for',0,0,0,0,0,0,0,0,0,0);

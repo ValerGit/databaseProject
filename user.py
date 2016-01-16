@@ -1,8 +1,9 @@
 from werkzeug.exceptions import BadRequest
 from flask import jsonify, Blueprint, request
 from flaskext.mysql import MySQL
-from utilities import true_false_ret, get_followees, get_followers, get_subscriptions
+from utilities import true_false_ret, get_followees, get_followers, get_subscriptions, zero_check
 import datetime
+import json
 
 
 user_api = Blueprint('user_api', __name__)
@@ -14,6 +15,7 @@ def user_create():
     conn = mysql.get_db()
     cursor = conn.cursor()
     try:
+
         req_json = request.get_json()
     except BadRequest:
         return jsonify(code=2, response="Cant parse json")
@@ -22,8 +24,12 @@ def user_create():
         return jsonify(code=3, response="Wrong request")
 
     new_user_username = req_json['username']
+    if new_user_username is None:
+        new_user_username = ""
     new_user_about = req_json['about']
     new_user_name = req_json['name']
+    if new_user_name is None:
+        new_user_name = ""
     new_user_email = req_json['email']
     new_user_figure = 0
 
@@ -31,7 +37,7 @@ def user_create():
         if req_json['isAnonymous'] is not False and req_json['isAnonymous'] is not True:
             return jsonify(code=3, response="Wrong parameters")
         new_user_is_anon = req_json['isAnonymous']
-        if req_json['isAnonymous'] is False:
+        if not new_user_is_anon:
             new_user_figure = 0
         else:
             new_user_figure = 1
@@ -43,7 +49,7 @@ def user_create():
         cursor.execute('INSERT INTO User VALUES (null,%s,%s,%s,%s,%s)', sql_data)
         conn.commit()
     except Exception:
-        return jsonify(code=5, responce='User already exist')
+        return jsonify(code=5, response='User already exist')
 
     resp = {
         "email": new_user_email,
@@ -53,7 +59,6 @@ def user_create():
         "isAnonymous": new_user_is_anon,
         "id": cursor.lastrowid,
     }
-    cursor.close()
     return jsonify(code=0, response=resp)
 
 
@@ -212,7 +217,7 @@ def user_list_posts():
     end_list = []
     for x in all_posts:
         end_list.append(get_post_info(x))
-    return jsonify(code=0, responce=end_list)
+    return jsonify(code=0, response=end_list)
 
 
 def get_post_info(post_info):
@@ -228,7 +233,7 @@ def get_post_info(post_info):
         "isSpam": true_false_ret(post_info[10]),
         "likes": post_info[12],
         "message": post_info[3],
-        "parent": post_info[4],
+        "parent": zero_check(post_info[6]),
         "points": post_info[14],
         "thread": post_info[2],
         "user": post_info[4]
@@ -287,17 +292,13 @@ def get_all_user_info(cursor, user):
     all_fetched_followers = get_followers(cursor, user)
     all_fetched_followees = get_followees(cursor, user)
     all_fetched_subscr = get_subscriptions(cursor, user)
-    if usr_info[0][3]:
-        anon = True
-    else:
-        anon = False
     resp = {
         "id": usr_info[0][0],
         "email": usr_info[0][1],
         "about": usr_info[0][2],
-        "isAnonymous": anon,
-        "name": usr_info[0][4],
-        "username": usr_info[0][5],
+        "isAnonymous": true_false_ret(usr_info[0][3]),
+        "name": empty_check(usr_info[0][4]),
+        "username": empty_check(usr_info[0][5]),
         "followers": all_fetched_followers,
         "following": all_fetched_followees,
         "subscriptions": all_fetched_subscr
@@ -305,66 +306,7 @@ def get_all_user_info(cursor, user):
     return jsonify(code=0, response=resp)
 
 
-# def get_subscriptions(cursor, user_email):
-#     cursor.execute("SELECT S.thread FROM Thread_Subscr S INNER JOIN Thread T ON T.id = S.thread "
-#                    "WHERE S.user='%s' AND T.isClosed = 0 " % user_email)
-#     all_subscr = cursor.fetchall()
-#     all_fetched_subscr = []
-#     for x in all_subscr:
-#         all_fetched_subscr.append(x[0])
-#     return all_fetched_subscr
-#
-#
-# def get_followers(cursor, followee):
-#     cursor.execute("SELECT follower FROM Following WHERE followee='%s'" % followee)
-#     all_folwrs = cursor.fetchall()
-#     all_fetched_followers = []
-#     for x in all_folwrs:
-#         all_fetched_followers.append(x[0])
-#     return all_fetched_followers
-#
-#
-# def get_followees(cursor, follower):
-#     cursor.execute("SELECT followee FROM Following WHERE follower='%s'" % follower)
-#     all_folwees = cursor.fetchall()
-#     all_fetched_followees = []
-#     for x in all_folwees:
-#         all_fetched_followees.append(x[0])
-#     return all_fetched_followees
-
-
-
-# def get_user_info_external_params(forum, limit, order, since_id):
-#     conn = mysql.get_db()
-#     cursor = conn.cursor()
-#     query_first = "SELECT * FROM User where email='%s'" % forum
-#     query_second = " AND id >='%s'" % since_id
-#     query_third = " ORDER BY name %s %s" % (order, limit)
-#     full_query = query_first + query_second + query_third
-#     cursor.execute(full_query)
-#     usr_info = cursor.fetchall()
-#     resp = []
-#     for usr in usr_info:
-#         resp.append(extract_user_info(cursor, usr))
-#     return jsonify(code=0, response=resp)
-#
-#
-# def extract_user_info(cursor, user):
-#     all_fetched_followers = get_followers(cursor, user)
-#     all_fetched_followees = get_followees(cursor, user)
-#     all_fetched_subscr = get_subscriptions(cursor, user)
-#     if user [3]:
-#         anon = True
-#     else:
-#         anon = False
-#     resp = {
-#         "id": user[0],
-#         "email": user[1],
-#         "about": user[2],
-#         "isAnonymous": anon,
-#         "name": user[4],
-#         "username": user[5],
-#         "followers": all_fetched_followers,
-#         "following": all_fetched_followees,
-#         "subscriptions": all_fetched_subscr
-#     }
+def empty_check(value):
+    if value == "":
+        return None
+    return value

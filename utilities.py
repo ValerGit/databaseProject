@@ -22,13 +22,19 @@ def get_user_info_external(cursor, user):
             "email": usr_info[0][1],
             "about": usr_info[0][2],
             "isAnonymous": anon,
-            "name": usr_info[0][4],
-            "username": usr_info[0][5],
+            "name": empty_check(usr_info[0][4]),
+            "username": empty_check(usr_info[0][5]),
             "followers": all_fetched_followers,
             "following": all_fetched_followees,
             "subscriptions": all_fetched_subscr
         }
     return resp
+
+
+def empty_check(value):
+    if value == "":
+        return None
+    return value
 
 
 def get_user_info_external_by_input(cursor, user):
@@ -54,6 +60,7 @@ def get_user_info_external_by_input(cursor, user):
             "subscriptions": all_fetched_subscr
         }
     return resp
+
 
 def get_subscriptions(cursor, user_email):
     cursor.execute("SELECT S.thread FROM Thread_Subscr S INNER JOIN Thread T ON T.id = S.thread "
@@ -113,7 +120,7 @@ def get_thread_info_external(cursor, thread_id):
     thread = cursor.fetchall()
     if not thread:
         return {}
-    return get_thread_info(thread[0])
+    return get_thread_info(cursor, thread[0])
 
 
 def get_thread_info_external_params(forum_short_name, since, limit, order, related):
@@ -133,7 +140,7 @@ def get_thread_info_external_params(forum_short_name, since, limit, order, relat
     return jsonify(code=0, response=end_list)
 
 
-def get_thread_info(thread):
+def get_thread_info(cursor, thread):
     resp = {
         "id": thread[0],
         "forum": thread[1],
@@ -146,9 +153,11 @@ def get_thread_info(thread):
         "isDeleted": true_false_ret(thread[9]),
         "likes": thread[9],
         "dislikes": thread[10],
-        "points": thread[11]
+        "points": thread[11],
+        "posts": count_posts_in_thread(cursor, thread[0])
     }
     return resp
+
 
 def get_post_info_by_post(post_info):
     resp = {
@@ -163,12 +172,18 @@ def get_post_info_by_post(post_info):
         "isSpam": true_false_ret(post_info[10]),
         "likes": post_info[12],
         "message": post_info[3],
-        "parent": post_info[4],
+        "parent": zero_check(post_info[6]),
         "points": post_info[14],
         "thread": post_info[2],
         "user": post_info[4]
     }
     return resp
+
+
+def zero_check(value):
+    if int(value) == 0:
+        return None
+    return value
 
 
 def get_thread_with_params(cursor, thread, related):
@@ -196,3 +211,52 @@ def get_thread_with_params(cursor, thread, related):
         "points": thread[11]
     }
     return resp
+
+
+def tree_sort(posts_info, limit):
+    list_of_lists = []
+    limit_list = []
+    counter = 0
+    for x in posts_info:
+        limit_list.append(get_post_info_by_post(x))
+        counter += 1
+        if counter == limit and limit != 0:
+            list_of_lists.append(list(limit_list))
+            counter = 0
+            del limit_list[:]
+    if limit_list:
+        list_of_lists.append(list(limit_list))
+    return list_of_lists
+
+
+def flat_sort(posts_info):
+    end_list = []
+    for x in posts_info:
+        end_list.append(get_post_info_by_post(x))
+    return end_list
+
+
+def parent_tree_sort(posts_info, limit):
+    list_of_lists = []
+    limit_list = []
+    counter = 0
+    for x in posts_info:
+        if '.' not in x[15]:
+            counter += 1
+        limit_list.append(get_post_info_by_post(x))
+
+        if counter == limit and limit != 0:
+            list_of_lists.append(list(limit_list))
+            counter = 0
+            del limit_list[:]
+    if limit_list:
+        list_of_lists.append(list(limit_list))
+    return list_of_lists
+
+
+def count_posts_in_thread(cursor, thread_id):
+    cursor.execute("SELECT count(id) FROM Post WHERE thread = %s AND isDeleted=0" % thread_id)
+    number = cursor.fetchall()
+    if not number:
+        return 0
+    return int(number[0][0])
