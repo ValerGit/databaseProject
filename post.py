@@ -36,7 +36,7 @@ def post_create():
     new_post_is_del = 0
     new_post_parent_id = 0
 
-    if 'parent' in req_json:
+    if 'parent' in req_json and req_json['parent'] is not None:
         new_post_parent_id = req_json['parent']
     new_post_path = get_post_path(cursor, new_post_parent_id)
 
@@ -163,13 +163,17 @@ def post_list():
         query_first = "SELECT * FROM Post WHERE thread='%s'" % thread_id
     query_second = " AND date >= '%s' ORDER BY date %s %s" % (since, order, limit)
     full_query = query_first + query_second
-    cursor.execute(full_query)
+    try:
+        cursor.execute(full_query)
+    except Exception:
+        return jsonify(code=3, response="Wrong request")
+
     all_posts = cursor.fetchall()
     if not all_posts:
-        return jsonify(code=3, response="No posts found")
+        return jsonify(code=0, response={})
     end_list = []
     for x in all_posts:
-        end_list.append(get_post_info_by_post(x))
+        end_list.append(get_post_info_by_post(cursor, x))
     return jsonify(code=0, response=end_list)
 
 
@@ -219,7 +223,7 @@ def post_update():
     post_info = cursor.fetchall()[0]
     if not post_info:
         return jsonify(code=1, response="Can't find this post")
-    resp = get_post_info_by_post(post_info)
+    resp = get_post_info_by_post(cursor, post_info)
     return jsonify(code=0, response=resp)
 
 
@@ -257,7 +261,7 @@ def post_vote():
     conn.commit()
     cursor.execute("SELECT * FROM Post WHERE id='%s'" % post_id)
     updated_thread = cursor.fetchall()
-    resp = get_post_info_by_post(updated_thread[0])
+    resp = get_post_info_by_post(cursor, updated_thread[0])
     return jsonify(code=0, response=resp)
 
 

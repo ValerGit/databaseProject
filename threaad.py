@@ -94,6 +94,11 @@ def thread_details():
         user_info = get_user_info_external(cursor, thread_info[4])
     if 'forum' in related_list:
         forum_info = get_forum_info_external(cursor, thread_info[1])
+
+    num_posts = count_posts_in_thread(cursor, thread_id)
+    if true_false_ret(thread_info[8]):
+        num_posts = 0
+
     resp = {
         "id": thread_info[0],
         "forum": forum_info,
@@ -107,7 +112,7 @@ def thread_details():
         "likes": thread_info[9],
         "dislikes": thread_info[10],
         "points": thread_info[11],
-        "posts": count_posts_in_thread(cursor, thread_id)
+        "posts": num_posts
     }
     return jsonify(code=0, response=resp)
 
@@ -349,13 +354,15 @@ def thread_list_posts():
     if request.args.get('limit'):
         limit = int(request.args.get('limit'))
 
-    order = request.args.get('order')
-    if not order:
-        order = "DESC"
+    order_req = request.args.get('order')
+    order = "DESC"
+    if order_req == "asc":
+        order = "ASC"
 
     sort = request.args.get('sort')
     resp = []
     if sort:
+
         if sort == 'flat':
             resp = make_flat_sort_thread(cursor, thread_id, since, limit, order)
         elif sort == 'tree':
@@ -365,17 +372,18 @@ def thread_list_posts():
     else:
         lim = ""
         if limit != 0:
-            lim = "LIMIT "+ str(limit)
+            lim = "LIMIT " + str(limit)
+
         full_query = "SELECT P.id, P.date, P.thread, P.message, P.user, P.forum, P.parent, P.isApproved, " \
                      "P.isHighlighted, P.isEdited, P.isSpam, P.isDeleted, P.likes, P.dislikes, P.points, P.path " \
-                     "FROM Post P INNER JOIN Thread T ON P.thread=T.id WHERE T.id=%s AND T.date >= '%s' " \
-                     "ORDER BY T.date %s %s" % (thread_id, since, order, lim)
+                     "FROM Post P INNER JOIN Thread T ON P.thread=T.id WHERE T.id=%s AND P.date >= '%s' " \
+                     "ORDER BY P.date %s %s" % (thread_id, since, order, lim)
         cursor.execute(full_query)
         posts_info = cursor.fetchall()
         if posts_info:
-            resp = flat_sort(posts_info)
+            resp = flat_sort(cursor, posts_info)
         else:
-            return jsonify(code=0, response="")
+            return jsonify(code=0, response={})
     return jsonify(code=0, response=resp)
 
 
@@ -387,7 +395,7 @@ def make_flat_sort_thread(cursor, thread_id, since, lim, order):
     query_first = "SELECT P.id, P.date, P.thread, P.message, P.user, P.forum, P.parent, P.isApproved, P.isHighlighted, " \
                   "P.isEdited, P.isSpam, P.isDeleted, P.likes, P.dislikes, P.points, P.path FROM Post P " \
                   "INNER JOIN Thread T ON P.thread=T.id "
-    query_second = "WHERE T.id=%s AND T.date >= %s ORDER BY T.date %s %s" % (thread_id, since, order, limit)
+    query_second = "WHERE T.id=%s AND T.date >= '%s' ORDER BY T.date %s %s" % (thread_id, since, order, limit)
     full_query = query_first + query_second
     cursor.execute(full_query)
     posts_info = cursor.fetchall()
@@ -398,7 +406,7 @@ def make_tree_sort_thread(cursor, thread_id, since, limit, order):
     query_first = "SELECT P.id, P.date, P.thread, P.message, P.user, P.forum, P.parent, P.isApproved, P.isHighlighted, " \
                   "P.isEdited, P.isSpam, P.isDeleted, P.likes, P.dislikes, P.points, P.path FROM Post P " \
                   " INNER JOIN Thread T ON P.thread=T.id "
-    query_second = " WHERE T.id=%s AND T.date >= %s ORDER BY P.path %s " % (thread_id, since, order)
+    query_second = "WHERE T.id=%s AND T.date >= '%s' ORDER BY P.path %s " % (thread_id, since, order)
     full_query = query_first + query_second
     cursor.execute(full_query)
     posts_info = cursor.fetchall()
@@ -409,7 +417,7 @@ def make_parent_tree_sort_thread(cursor, thread_id, since, limit, order):
     query_first = "SELECT P.id, P.date, P.thread, P.message, P.user, P.forum, P.parent, P.isApproved, P.isHighlighted, " \
                   "P.isEdited, P.isSpam, P.isDeleted, P.likes, P.dislikes, P.points, P.path FROM Post P " \
                   " INNER JOIN Thread T ON P.thread=T.id "
-    query_second = " WHERE T.id=%s AND T.date >= %s ORDER BY P.path %s " % (thread_id, since, order)
+    query_second = " WHERE T.id=%s AND T.date >= '%s' ORDER BY P.path %s " % (thread_id, since, order)
     full_query = query_first + query_second
     cursor.execute(full_query)
     posts_info = cursor.fetchall()

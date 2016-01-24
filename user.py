@@ -1,7 +1,8 @@
 from werkzeug.exceptions import BadRequest
 from flask import jsonify, Blueprint, request
 from flaskext.mysql import MySQL
-from utilities import true_false_ret, get_followees, get_followers, get_subscriptions, zero_check
+from utilities import true_false_ret, get_followees, get_followers, get_subscriptions, \
+    zero_check, get_user_info_external
 import datetime
 import json
 
@@ -152,17 +153,17 @@ def user_followers_list():
     if not user_email:
         return jsonify(code=3, response="Wrong request")
 
-    limit=''
-    if request.args.get('limit',''):
-        limit = 'LIMIT '+request.args.get('limit', '')
+    limit = ''
+    if request.args.get('limit'):
+        limit = 'LIMIT '+request.args.get('limit')
 
-    order='DESC'
-    if request.args.get('order', ''):
-        order=request.args.get('order', '')
+    order = 'DESC'
+    if request.args.get('order'):
+        order=request.args.get('order')
 
     since_id = 1
-    if request.args.get('since_id', ''):
-        since_id=request.args.get('since_id', '')
+    if request.args.get('since_id'):
+        since_id=request.args.get('since_id')
     return list_folowings(cursor, limit, order, since_id, user_email, 1)
 
 
@@ -213,7 +214,7 @@ def user_list_posts():
     cursor.execute(query)
     all_posts = cursor.fetchall()
     if not all_posts:
-        return jsonify(code=1, response="No posts found")
+        return jsonify(code=0, response=[])
     end_list = []
     for x in all_posts:
         end_list.append(get_post_info(x))
@@ -252,36 +253,20 @@ def list_folowings(cursor, limit, order, since_id, user_email, is_follower):
         cursor.execute(query)
         all_followers = cursor.fetchall()
         all_fetched_followers = []
+        # all = all_followers[0]
         for x in all_followers:
-            all_fetched_followers.append(x[0])
-        all_fetched_followees = get_followees(cursor, user_email)
+            all_fetched_followers.append(get_user_info_external(cursor, x))
+
     else:
         query = "SELECT F.followee FROM Following F INNER JOIN User U ON F.followee = U.email"\
                 " WHERE U.id >= %s AND F.follower= '%s' ORDER BY F.followee %s %s " % (since_id, user_email, order, limit)
         cursor.execute(query)
         all_followers = cursor.fetchall()
-        all_fetched_followees = []
+        all_fetched_followers = []
         for x in all_followers:
-            all_fetched_followees.append(x[0])
-        all_fetched_followers = get_followers(cursor, user_email)
+            all_fetched_followers.append(get_user_info_external(cursor, x[0]))
 
-    all_fetched_subscr = get_subscriptions(cursor, user_email)
-    if usr_info[0][3]:
-        anon = True
-    else:
-        anon = False
-    resp = {
-        "id": usr_info[0][0],
-        "email": usr_info[0][1],
-        "about": usr_info[0][2],
-        "isAnonymous": anon,
-        "name": usr_info[0][4],
-        "username": usr_info[0][5],
-        "followers": all_fetched_followers,
-        "following": all_fetched_followees,
-        "subscriptions": all_fetched_subscr
-    }
-    return jsonify(code=0, response=resp)
+    return jsonify(code=0, response=all_fetched_followers)
 
 
 def get_all_user_info(cursor, user):

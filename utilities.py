@@ -39,7 +39,7 @@ def empty_check(value):
 
 def get_user_info_external_by_input(cursor, user):
     resp = {}
-    if user:
+    if user is not None:
         email = user[1]
         all_fetched_followers = get_followers(cursor, email)
         all_fetched_followees = get_followees(cursor, email)
@@ -64,8 +64,10 @@ def get_user_info_external_by_input(cursor, user):
 
 def get_subscriptions(cursor, user_email):
     cursor.execute("SELECT S.thread FROM Thread_Subscr S INNER JOIN Thread T ON T.id = S.thread "
-                   "WHERE S.user='%s' AND T.isClosed = 0 " % user_email)
+                   "WHERE S.user='%s' " % user_email)
     all_subscr = cursor.fetchall()
+    if not all_subscr:
+        return []
     all_fetched_subscr = []
     for x in all_subscr:
         all_fetched_subscr.append(x[0])
@@ -133,7 +135,7 @@ def get_thread_info_external_params(forum_short_name, since, limit, order, relat
     cursor.execute(full_query)
     thread = cursor.fetchall()
     if not thread:
-        return jsonify(code=1, response="No such thread")
+        return jsonify(code=0, response=[])
     end_list = []
     for x in thread:
         end_list.append(get_thread_with_params(cursor, x, related))
@@ -159,14 +161,19 @@ def get_thread_info(cursor, thread):
     return resp
 
 
-def get_post_info_by_post(post_info):
+def get_post_info_by_post(cursor, post_info):
+    cursor.execute("SELECT isDeleted FROM Thread WHERE id=%s" % post_info[2])
+    deleted_thread = cursor.fetchall()[0][0]
+    del_post = true_false_ret(post_info[11])
+    if deleted_thread:
+        del_post = True
     resp = {
         "date": datetime.datetime.strftime(post_info[1], "%Y-%m-%d %H:%M:%S"),
         "dislikes": post_info[13],
         "forum": post_info[5],
         "id": post_info[0],
         "isApproved": true_false_ret(post_info[7]),
-        "isDeleted": true_false_ret(post_info[11]),
+        "isDeleted": del_post,
         "isEdited": true_false_ret(post_info[9]),
         "isHighlighted": true_false_ret(post_info[8]),
         "isSpam": true_false_ret(post_info[10]),
@@ -186,16 +193,14 @@ def zero_check(value):
     return value
 
 
-def get_thread_with_params(cursor, thread, related):
+def get_thread_with_params(cursor, thread, related_list):
     user_info = thread[4]
     forum_info = thread[1]
-    if related:
+    for related in related_list:
         if related == 'user':
             user_info = get_user_info_external(cursor, thread[4])
-
         elif related == 'forum':
             forum_info = get_forum_info_external(cursor, thread[1])
-
     resp = {
         "id": thread[0],
         "forum": forum_info,
@@ -208,7 +213,8 @@ def get_thread_with_params(cursor, thread, related):
         "isDeleted": true_false_ret(thread[9]),
         "likes": thread[9],
         "dislikes": thread[10],
-        "points": thread[11]
+        "points": thread[11],
+        "posts": count_posts_in_thread(cursor, thread[0])
     }
     return resp
 
@@ -229,10 +235,10 @@ def tree_sort(posts_info, limit):
     return list_of_lists
 
 
-def flat_sort(posts_info):
+def flat_sort(cursor, posts_info):
     end_list = []
     for x in posts_info:
-        end_list.append(get_post_info_by_post(x))
+        end_list.append(get_post_info_by_post(cursor, x))
     return end_list
 
 

@@ -95,9 +95,9 @@ def forum_list_threads():
     order = request.args.get('order')
     if not order:
         order = "DESC"
-    related = request.args.get('related')
+    related_list = request.args.getlist('related')
 
-    return get_thread_info_external_params(forum_short_name, since, limit, order, related)
+    return get_thread_info_external_params(forum_short_name, since, limit, order, related_list)
 
 
 @forum_api.route('listUsers/', methods=['GET'])
@@ -127,7 +127,7 @@ def forum_list_users():
     cursor.execute(full_query)
     user_info = cursor.fetchall()
     if not user_info:
-        return jsonify(code=1, response="No such users")
+        return jsonify(code=0, response=[])
     end_list = []
     for x in user_info:
         end_list.append(get_user_info_external_by_input(cursor, x))
@@ -163,7 +163,7 @@ def forum_list_posts():
     cursor.execute(query_first)
     posts_info = cursor.fetchall()
     if not posts_info:
-        return jsonify(code=1, response="No such users")
+        return jsonify(code=0, response=[])
     end_list = []
     for x in posts_info:
         end_list.append(get_post_info_params(cursor, x, related_list))
