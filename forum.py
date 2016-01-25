@@ -110,7 +110,7 @@ def forum_list_users():
 
     since_id = request.args.get('since_id')
     if not since_id:
-        since_id = 1
+        since_id = 0
 
     limit = ""
     if request.args.get('limit'):
@@ -120,8 +120,8 @@ def forum_list_users():
     if not order:
         order = "DESC"
 
-    full_query = "SELECT U.id, U.email, U.about, U.isAnonymous, U.name, U.username FROM User U " \
-                 "INNER JOIN Post P WHERE P.forum='%s' AND U.id >= '%s' " \
+    full_query = "SELECT DISTINCT(P.user), U.id, U.email, U.about, U.isAnonymous, U.name, U.username FROM Post P " \
+                 "INNER JOIN User U ON P.user=U.email WHERE P.isDeleted=0 AND P.forum='%s' AND U.id >= '%s' " \
                  "ORDER BY U.name %s %s" % (forum_short_name, since_id, order, limit)
 
     cursor.execute(full_query)

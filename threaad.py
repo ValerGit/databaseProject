@@ -90,10 +90,13 @@ def thread_details():
     user_info = thread_info[4]
     related_list = request.args.getlist('related')
 
-    if 'user' in related_list:
-        user_info = get_user_info_external(cursor, thread_info[4])
-    if 'forum' in related_list:
-        forum_info = get_forum_info_external(cursor, thread_info[1])
+    for related in related_list:
+        if related == 'user':
+            user_info = get_user_info_external(cursor, thread_info[4])
+        elif related == 'forum':
+            forum_info = get_forum_info_external(cursor, thread_info[1])
+        elif related == 'thread':
+            return jsonify(code=3, response="Wrong request")
 
     num_posts = count_posts_in_thread(cursor, thread_id)
     if true_false_ret(thread_info[8]):

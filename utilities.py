@@ -13,15 +13,11 @@ def get_user_info_external(cursor, user):
         all_fetched_followers = get_followers(cursor, user)
         all_fetched_followees = get_followees(cursor, user)
         all_fetched_subscr = get_subscriptions(cursor, user)
-        if usr_info[0][3]:
-            anon = True
-        else:
-            anon = False
         resp = {
             "id": usr_info[0][0],
             "email": usr_info[0][1],
             "about": usr_info[0][2],
-            "isAnonymous": anon,
+            "isAnonymous": true_false_ret(usr_info[0][3]),
             "name": empty_check(usr_info[0][4]),
             "username": empty_check(usr_info[0][5]),
             "followers": all_fetched_followers,
@@ -40,21 +36,17 @@ def empty_check(value):
 def get_user_info_external_by_input(cursor, user):
     resp = {}
     if user is not None:
-        email = user[1]
+        email = user[2]
         all_fetched_followers = get_followers(cursor, email)
         all_fetched_followees = get_followees(cursor, email)
         all_fetched_subscr = get_subscriptions(cursor, email)
-        if user[3]:
-            anon = True
-        else:
-            anon = False
         resp = {
-            "id": user[0],
-            "email": user[1],
-            "about": user[2],
-            "isAnonymous": anon,
-            "name": user[4],
-            "username": user[5],
+            "id": user[1],
+            "email": email,
+            "about": user[3],
+            "isAnonymous": true_false_ret(user[4]),
+            "name": empty_check(user[5]),
+            "username": empty_check(user[6]),
             "followers": all_fetched_followers,
             "following": all_fetched_followees,
             "subscriptions": all_fetched_subscr
@@ -128,10 +120,8 @@ def get_thread_info_external(cursor, thread_id):
 def get_thread_info_external_params(forum_short_name, since, limit, order, related):
     conn = mysql.get_db()
     cursor = conn.cursor()
-    query_first = "SELECT * FROM Thread WHERE forum='%s'" % forum_short_name
-    query_second = " AND date >= '%s'" % since
-    query_third = " ORDER BY date %s %s" % (order, limit)
-    full_query = query_first + query_second + query_third
+    full_query = "SELECT * FROM Thread WHERE forum='%s' AND date >= '%s' ORDER BY " \
+                 "date %s %s" % (forum_short_name, since, order, limit)
     cursor.execute(full_query)
     thread = cursor.fetchall()
     if not thread:
@@ -152,7 +142,7 @@ def get_thread_info(cursor, thread):
         "date": datetime.datetime.strftime(thread[5], "%Y-%m-%d %H:%M:%S"),
         "message": thread[6],
         "slug": thread[7],
-        "isDeleted": true_false_ret(thread[9]),
+        "isDeleted": true_false_ret(thread[8]),
         "likes": thread[9],
         "dislikes": thread[10],
         "points": thread[11],
@@ -210,7 +200,7 @@ def get_thread_with_params(cursor, thread, related_list):
         "date": datetime.datetime.strftime(thread[5], "%Y-%m-%d %H:%M:%S"),
         "message": thread[6],
         "slug": thread[7],
-        "isDeleted": true_false_ret(thread[9]),
+        "isDeleted": true_false_ret(thread[8]),
         "likes": thread[9],
         "dislikes": thread[10],
         "points": thread[11],
