@@ -177,6 +177,26 @@ def get_post_info_by_post(cursor, post_info):
     return resp
 
 
+def get_post_info_special(post_info):
+    resp = {
+        "date": datetime.datetime.strftime(post_info[1], "%Y-%m-%d %H:%M:%S"),
+        "dislikes": post_info[13],
+        "forum": post_info[5],
+        "id": post_info[0],
+        "isApproved": true_false_ret(post_info[7]),
+        "isDeleted": true_false_ret(post_info[11]),
+        "isEdited": true_false_ret(post_info[9]),
+        "isHighlighted": true_false_ret(post_info[8]),
+        "isSpam": true_false_ret(post_info[10]),
+        "likes": post_info[12],
+        "message": post_info[3],
+        "parent": zero_check(post_info[6]),
+        "points": post_info[14],
+        "thread": post_info[2],
+        "user": post_info[4]
+    }
+    return resp
+
 def zero_check(value):
     if int(value) == 0:
         return None
@@ -209,20 +229,15 @@ def get_thread_with_params(cursor, thread, related_list):
     return resp
 
 
-def tree_sort(posts_info, limit):
-    list_of_lists = []
+def tree_sort(cursor, posts_info, limit):
     limit_list = []
     counter = 0
     for x in posts_info:
-        limit_list.append(get_post_info_by_post(x))
+        limit_list.append(get_post_info_special(x))
         counter += 1
         if counter == limit and limit != 0:
-            list_of_lists.append(list(limit_list))
-            counter = 0
-            del limit_list[:]
-    if limit_list:
-        list_of_lists.append(list(limit_list))
-    return list_of_lists
+            return limit_list
+    return limit_list
 
 
 def flat_sort(cursor, posts_info):
@@ -232,22 +247,17 @@ def flat_sort(cursor, posts_info):
     return end_list
 
 
-def parent_tree_sort(posts_info, limit):
-    list_of_lists = []
+def parent_tree_sort(cursor, posts_info, limit):
     limit_list = []
     counter = 0
     for x in posts_info:
         if '.' not in x[15]:
             counter += 1
-        limit_list.append(get_post_info_by_post(x))
+        if counter > limit:
+            return limit_list
 
-        if counter == limit and limit != 0:
-            list_of_lists.append(list(limit_list))
-            counter = 0
-            del limit_list[:]
-    if limit_list:
-        list_of_lists.append(list(limit_list))
-    return list_of_lists
+        limit_list.append(get_post_info_special(x))
+    return limit_list
 
 
 def count_posts_in_thread(cursor, thread_id):

@@ -5,8 +5,8 @@ import datetime, time
 import json
 from json import dumps
 from utilities import get_user_info_external, get_forum_info_external, \
-    get_post_info_by_post,true_false_ret, get_thread_info, flat_sort, parent_tree_sort, tree_sort, count_posts_in_thread
-
+    get_post_info_by_post, true_false_ret, get_thread_info, flat_sort, get_post_info_special, tree_sort, \
+    count_posts_in_thread
 
 thread_api = Blueprint('thread_api', __name__)
 mysql = MySQL()
@@ -283,7 +283,7 @@ def thread_list():
         order = "DESC"
 
     if forum_short_name:
-        first_part= "SELECT * FROM Thread WHERE forum='%s'" % forum_short_name
+        first_part = "SELECT * FROM Thread WHERE forum='%s'" % forum_short_name
     else:
         first_part = "SELECT * FROM Thread WHERE user='%s'" % user_email
     second_part = " AND date >= '%s' ORDER BY date %s %s" % (since, order, limit)
@@ -379,7 +379,7 @@ def thread_list_posts():
 
         full_query = "SELECT P.id, P.date, P.thread, P.message, P.user, P.forum, P.parent, P.isApproved, " \
                      "P.isHighlighted, P.isEdited, P.isSpam, P.isDeleted, P.likes, P.dislikes, P.points, P.path " \
-                     "FROM Post P INNER JOIN Thread T ON P.thread=T.id WHERE T.id=%s AND P.date >= '%s' " \
+                     "FROM Post P WHERE P.thread=%s AND P.date >= '%s' " \
                      "ORDER BY P.date %s %s" % (thread_id, since, order, lim)
         cursor.execute(full_query)
         posts_info = cursor.fetchall()
@@ -387,44 +387,61 @@ def thread_list_posts():
             resp = flat_sort(cursor, posts_info)
         else:
             return jsonify(code=0, response={})
+
     return jsonify(code=0, response=resp)
 
 
-def make_flat_sort_thread(cursor, thread_id, since, lim, order):
-    if lim != 0:
-        limit = "LIMIT " + str(lim)
+def make_flat_sort_thread(cursor, thread_id, since, limit, order):
+    lim = ""
+    if limit != 0:
+        lim = "LIMIT " + str(limit)
+    full_query = "SELECT P.id, P.date, P.thread, P.message, P.user, P.forum, P.parent, P.isApproved, " \
+                 "P.isHighlighted, P.isEdited, P.isSpam, P.isDeleted, P.likes, P.dislikes, P.points, P.path " \
+                 "FROM Post P WHERE P.thread=%s AND P.date >= '%s' " \
+                 "ORDER BY P.date %s %s" % (thread_id, since, order, lim)
+    cursor.execute(full_query)
+    posts_info = cursor.fetchall()
+    return flat_sort(cursor, posts_info)
+
+
+def make_tree_sort_thread(cursor, thread_id, since, lim, order):
+    if order == 'DESC':
+        sec = "ORDER BY substring_index(P.path, '.', 1) DESC, P.path ASC"
     else:
-        limit = ""
-    query_first = "SELECT P.id, P.date, P.thread, P.message, P.user, P.forum, P.parent, P.isApproved, P.isHighlighted, " \
-                  "P.isEdited, P.isSpam, P.isDeleted, P.likes, P.dislikes, P.points, P.path FROM Post P " \
-                  "INNER JOIN Thread T ON P.thread=T.id "
-    query_second = "WHERE T.id=%s AND T.date >= '%s' ORDER BY T.date %s %s" % (thread_id, since, order, limit)
-    full_query = query_first + query_second
+        sec = "ORDER BY P.path ASC"
+
+    first = "SELECT P.id, P.date, P.thread, P.message, P.user, P.forum, P.parent, P.isApproved, " \
+            "P.isHighlighted, P.isEdited, P.isSpam, P.isDeleted, P.likes, P.dislikes, P.points, P.path " \
+            "FROM Post P WHERE P.thread=%s AND P.date >= '%s' " % (thread_id, since)
+    full_query = first + sec
     cursor.execute(full_query)
     posts_info = cursor.fetchall()
-    return flat_sort(posts_info)
-
-
-def make_tree_sort_thread(cursor, thread_id, since, limit, order):
-    query_first = "SELECT P.id, P.date, P.thread, P.message, P.user, P.forum, P.parent, P.isApproved, P.isHighlighted, " \
-                  "P.isEdited, P.isSpam, P.isDeleted, P.likes, P.dislikes, P.points, P.path FROM Post P " \
-                  " INNER JOIN Thread T ON P.thread=T.id "
-    query_second = "WHERE T.id=%s AND T.date >= '%s' ORDER BY P.path %s " % (thread_id, since, order)
-    full_query = query_first + query_second
-    cursor.execute(full_query)
-    posts_info = cursor.fetchall()
-    return tree_sort(posts_info, limit)
+    return tree_sort(cursor, posts_info, lim)
 
 
 def make_parent_tree_sort_thread(cursor, thread_id, since, limit, order):
-    query_first = "SELECT P.id, P.date, P.thread, P.message, P.user, P.forum, P.parent, P.isApproved, P.isHighlighted, " \
-                  "P.isEdited, P.isSpam, P.isDeleted, P.likes, P.dislikes, P.points, P.path FROM Post P " \
-                  " INNER JOIN Thread T ON P.thread=T.id "
-    query_second = " WHERE T.id=%s AND T.date >= '%s' ORDER BY P.path %s " % (thread_id, since, order)
-    full_query = query_first + query_second
+    if order == 'DESC':
+        sec = "ORDER BY substring_index(P.path, '.', 1) DESC, P.path ASC "
+    else:
+        sec = "ORDER BY P.path ASC"
+
+    first = "SELECT P.id, P.date, P.thread, P.message, P.user, P.forum, P.parent, P.isApproved, " \
+            "P.isHighlighted, P.isEdited, P.isSpam, P.isDeleted, P.likes, P.dislikes, P.points, P.path " \
+            "FROM Post P WHERE P.thread=%s AND P.date >= '%s' " % (thread_id, since)
+
+    full_query = first + sec
     cursor.execute(full_query)
     posts_info = cursor.fetchall()
-    return parent_tree_sort(posts_info, limit)
+    limit_list = []
+    counter = 0
+    for x in posts_info:
+        if '.' not in x[15]:
+            counter += 1
+        if counter > limit:
+            # new_list = sorted(limit_list, key=lambda k: k['id'])
+            return limit_list
+        limit_list.append(get_post_info_special(x))
+    return limit_list
 
 
 def open_close_thread(is_closed, upd_or_open, thread_id):
@@ -432,7 +449,7 @@ def open_close_thread(is_closed, upd_or_open, thread_id):
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM Thread WHERE id='%s'" % thread_id)
     if not cursor.fetchall():
-         return jsonify(code=1, response="Can't find this thread")
+        return jsonify(code=1, response="Can't find this thread")
     action = "isDeleted"
     if upd_or_open:
         action = "isClosed"
