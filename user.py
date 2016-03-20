@@ -81,7 +81,7 @@ def user_follow():
     cursor.execute("SELECT * FROM Following WHERE followee = %s AND follower = %s", (new_followee, new_follower))
     if not cursor.fetchall():
         try:
-            cursor.execute('INSERT INTO following VALUES (%s,%s)', (new_followee, new_follower))
+            cursor.execute('INSERT INTO Following VALUES (%s,%s)', (new_followee, new_follower))
             conn.commit()
         except Exception:
             return jsonify(code=3, response="Wrong request")
@@ -104,7 +104,7 @@ def user_unfollow():
     del_followee = req_json['followee']
     del_follower = req_json['follower']
 
-    cursor.execute("DELETE FROM following WHERE followee=%s AND follower=%s", (del_followee, del_follower))
+    cursor.execute("DELETE FROM Following WHERE followee=%s AND follower=%s", (del_followee, del_follower))
     conn.commit()
     return get_all_user_info(cursor, del_follower)
 
