@@ -131,7 +131,7 @@ def thread_set_closed():
         return jsonify(code=3, response="Wrong request")
 
     thread_id = req_json['thread']
-    return open_close_thread(1, 1, thread_id)
+    return open_close(1, thread_id)
 
 
 @thread_api.route('open/', methods=['POST'])
@@ -145,7 +145,7 @@ def thread_set_opened():
         return jsonify(code=3, response="Wrong request")
 
     thread_id = req_json['thread']
-    return open_close_thread(0, 1, thread_id)
+    return open_close(0, thread_id)
 
 
 @thread_api.route('remove/', methods=['POST'])
@@ -159,7 +159,7 @@ def thread_set_deleted():
         return jsonify(code=3, response="Wrong request")
 
     thread_id = req_json['thread']
-    return open_close_thread(1, 0, thread_id)
+    return rem_restore(1, thread_id)
 
 
 @thread_api.route('restore/', methods=['POST'])
@@ -173,7 +173,7 @@ def thread_set_active():
         return jsonify(code=3, response="Wrong request")
 
     thread_id = req_json['thread']
-    return open_close_thread(0, 0, thread_id)
+    return rem_restore(0, thread_id)
 
 
 @thread_api.route('update/', methods=['POST'])
@@ -445,19 +445,54 @@ def make_parent_tree_sort_thread(cursor, thread_id, since, limit, order):
     return limit_list
 
 
-def open_close_thread(is_closed, upd_or_open, thread_id):
+# def open_close_thread(is_closed, upd_or_open, thread_id):
+#     conn = mysql.get_db()
+#     cursor = conn.cursor()
+#     cursor.execute("SELECT * FROM Thread WHERE id='%s'" % thread_id)
+#     if not cursor.fetchall():
+#         return jsonify(code=1, response="Can't find this thread")
+#     action = "isDeleted"
+#     if upd_or_open:
+#         action = "isClosed"
+#     sql_data = (is_closed, thread_id)
+#     part1 = "UPDATE Thread SET %s=" % action
+#     part2 = "%s WHERE id=%s" % (is_closed, thread_id)
+#     query = part1 + part2
+#     cursor.execute(query)
+#     conn.commit()
+#     resp = {
+#         "thread": thread_id
+#     }
+#     cursor.close()
+#     return jsonify(code=0, response=resp)
+
+
+def rem_restore(is_closed, thread_id):
     conn = mysql.get_db()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM Thread WHERE id='%s'" % thread_id)
     if not cursor.fetchall():
         return jsonify(code=1, response="Can't find this thread")
-    action = "isDeleted"
-    if upd_or_open:
-        action = "isClosed"
-    sql_data = (is_closed, thread_id)
-    part1 = "UPDATE Thread SET %s=" % action
-    part2 = "%s WHERE id=%s" % (is_closed, thread_id)
-    query = part1 + part2
+    query = "UPDATE Thread SET isDeleted=%s WHERE id=%s" % (is_closed, thread_id)
+    cursor.execute(query)
+    conn.commit()
+    del_posts = "UPDATE Post SET isDeleted=%s WHERE thread=%s" % (is_closed, thread_id)
+    cursor.execute(del_posts)
+    conn.commit()
+    resp = {
+        "thread": thread_id
+    }
+    cursor.close()
+    return jsonify(code=0, response=resp)
+
+
+def open_close(is_closed, thread_id):
+    conn = mysql.get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM Thread WHERE id='%s'" % thread_id)
+    if not cursor.fetchall():
+        return jsonify(code=1, response="Can't find this thread")
+    query = "UPDATE Thread SET isClosed=%s WHERE id=%s" % (is_closed, thread_id)
     cursor.execute(query)
     conn.commit()
     resp = {
