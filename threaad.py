@@ -438,9 +438,10 @@ def make_parent_tree_sort_thread(cursor, thread_id, since, limit, order):
         if '.' not in x[15]:
             counter += 1
         if counter > limit:
-            # new_list = sorted(limit_list, key=lambda k: k['id'])
+            new_list = sorted(limit_list, key=lambda k: k['id'])
             return limit_list
         limit_list.append(get_post_info_special(x))
+    new_list = sorted(limit_list, key=lambda k: k['id'])
     return limit_list
 
 
