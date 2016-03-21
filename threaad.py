@@ -6,7 +6,7 @@ import json
 from json import dumps
 from utilities import get_user_info_external, get_forum_info_external, \
     get_post_info_by_post, true_false_ret, get_thread_info, flat_sort, get_post_info_special, tree_sort, \
-    count_posts_in_thread
+    count_posts_in_thread,special_tree_sort
 
 thread_api = Blueprint('thread_api', __name__)
 mysql = MySQL()
@@ -404,19 +404,33 @@ def make_flat_sort_thread(cursor, thread_id, since, limit, order):
     return flat_sort(cursor, posts_info)
 
 
-def make_tree_sort_thread(cursor, thread_id, since, lim, order):
+def make_tree_sort_thread(cursor, thread_id, since, limit, order):
+    lim = ""
+    if limit != 0:
+        lim = "LIMIT " + str(limit)
     if order == 'DESC':
-        sec = "ORDER BY substring_index(P.path, '.', 1) DESC, P.path ASC"
-    else:
-        sec = "ORDER BY P.path ASC"
-
-    first = "SELECT P.id, P.date, P.thread, P.message, P.user, P.forum, P.parent, P.isApproved, " \
+        special = "%.%"
+        first = "SELECT id, date, thread, message, user, forum, parent, isApproved, " \
+            "isHighlighted, isEdited, isSpam, isDeleted, likes, dislikes, points, path " \
+            "FROM Post  WHERE thread=%s AND date >= '%s' AND path not like '%s' " \
+            "ORDER BY path DESC %s" % (thread_id, since, special, lim)
+        cursor.execute(first)
+        posts_info = cursor.fetchall()
+        second = "SELECT P.id, P.date, P.thread, P.message, P.user, P.forum, P.parent, P.isApproved, " \
             "P.isHighlighted, P.isEdited, P.isSpam, P.isDeleted, P.likes, P.dislikes, P.points, P.path " \
-            "FROM Post P WHERE P.thread=%s AND P.date >= '%s' " % (thread_id, since)
-    full_query = first + sec
-    cursor.execute(full_query)
-    posts_info = cursor.fetchall()
-    return tree_sort(cursor, posts_info, lim)
+            "FROM Post P WHERE P.thread=%s AND P.date >= '%s' AND P.path LIKE '%s' " \
+            "ORDER BY substring_index(path, '.', 2) desc,  path ASC %s" % (thread_id, since, special, lim)
+        cursor.execute(second)
+        childs_info = cursor.fetchall()
+        return special_tree_sort(posts_info, childs_info, limit)
+
+    else:
+        full_query = "SELECT P.id, P.date, P.thread, P.message, P.user, P.forum, P.parent, P.isApproved, " \
+            "P.isHighlighted, P.isEdited, P.isSpam, P.isDeleted, P.likes, P.dislikes, P.points, P.path " \
+            "FROM Post P WHERE P.thread=%s AND P.date >= '%s' ORDER BY P.path ASC %s" % (thread_id, since, lim)
+        cursor.execute(full_query)
+        posts_info = cursor.fetchall()
+        return tree_sort(posts_info, lim)
 
 
 def make_parent_tree_sort_thread(cursor, thread_id, since, limit, order):
