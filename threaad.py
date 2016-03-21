@@ -1,11 +1,9 @@
 from werkzeug.exceptions import BadRequest
 from flask import jsonify, Blueprint, request
 from flaskext.mysql import MySQL
-import datetime, time
-import json
-from json import dumps
+import datetime
 from utilities import get_user_info_external, get_forum_info_external, \
-    get_post_info_by_post, true_false_ret, get_thread_info, flat_sort, get_post_info_special, tree_sort, \
+    true_false_ret, get_thread_info, flat_sort, get_post_info_special, tree_sort, \
     count_posts_in_thread,special_tree_sort
 
 thread_api = Blueprint('thread_api', __name__)
@@ -377,10 +375,10 @@ def thread_list_posts():
         if limit != 0:
             lim = "LIMIT " + str(limit)
 
-        full_query = "SELECT P.id, P.date, P.thread, P.message, P.user, P.forum, P.parent, P.isApproved, " \
-                     "P.isHighlighted, P.isEdited, P.isSpam, P.isDeleted, P.likes, P.dislikes, P.points, P.path " \
-                     "FROM Post P WHERE P.thread=%s AND P.date >= '%s' " \
-                     "ORDER BY P.date %s %s" % (thread_id, since, order, lim)
+        full_query = "SELECT id, date, thread, message, user, forum, parent, isApproved, " \
+                     "isHighlighted, isEdited, isSpam, isDeleted, likes, dislikes, points, path " \
+                     "FROM Post WHERE thread=%s AND date >= '%s' " \
+                     "ORDER BY date %s %s" % (thread_id, since, order, lim)
         cursor.execute(full_query)
         posts_info = cursor.fetchall()
         if posts_info:
@@ -395,10 +393,10 @@ def make_flat_sort_thread(cursor, thread_id, since, limit, order):
     lim = ""
     if limit != 0:
         lim = "LIMIT " + str(limit)
-    full_query = "SELECT P.id, P.date, P.thread, P.message, P.user, P.forum, P.parent, P.isApproved, " \
-                 "P.isHighlighted, P.isEdited, P.isSpam, P.isDeleted, P.likes, P.dislikes, P.points, P.path " \
-                 "FROM Post P WHERE P.thread=%s AND P.date >= '%s' " \
-                 "ORDER BY P.date %s %s" % (thread_id, since, order, lim)
+    full_query = "SELECT id, date, thread, message, user, forum, parent, isApproved, " \
+                 "isHighlighted, isEdited, isSpam, isDeleted, likes, dislikes, points, path " \
+                 "FROM Post WHERE thread=%s AND date >= '%s' " \
+                 "ORDER BY date %s %s" % (thread_id, since, order, lim)
     cursor.execute(full_query)
     posts_info = cursor.fetchall()
     return flat_sort(cursor, posts_info)
@@ -412,22 +410,22 @@ def make_tree_sort_thread(cursor, thread_id, since, limit, order):
         special = "%.%"
         first = "SELECT id, date, thread, message, user, forum, parent, isApproved, " \
             "isHighlighted, isEdited, isSpam, isDeleted, likes, dislikes, points, path " \
-            "FROM Post  WHERE thread=%s AND date >= '%s' AND path not like '%s' " \
+            "FROM Post WHERE thread=%s AND date >= '%s' AND path not like '%s' " \
             "ORDER BY path DESC %s" % (thread_id, since, special, lim)
         cursor.execute(first)
         posts_info = cursor.fetchall()
-        second = "SELECT P.id, P.date, P.thread, P.message, P.user, P.forum, P.parent, P.isApproved, " \
-            "P.isHighlighted, P.isEdited, P.isSpam, P.isDeleted, P.likes, P.dislikes, P.points, P.path " \
-            "FROM Post P WHERE P.thread=%s AND P.date >= '%s' AND P.path LIKE '%s' " \
+        second = "SELECT id, date, thread, message, user, forum, parent, isApproved, " \
+            "isHighlighted, isEdited, isSpam, isDeleted, likes, dislikes, points, path " \
+            "FROM Post WHERE thread=%s AND date >= '%s' AND path LIKE '%s' " \
             "ORDER BY substring_index(path, '.', 2) desc,  path ASC %s" % (thread_id, since, special, lim)
         cursor.execute(second)
         childs_info = cursor.fetchall()
         return special_tree_sort(posts_info, childs_info, limit)
 
     else:
-        full_query = "SELECT P.id, P.date, P.thread, P.message, P.user, P.forum, P.parent, P.isApproved, " \
-            "P.isHighlighted, P.isEdited, P.isSpam, P.isDeleted, P.likes, P.dislikes, P.points, P.path " \
-            "FROM Post P WHERE P.thread=%s AND P.date >= '%s' ORDER BY P.path ASC %s" % (thread_id, since, lim)
+        full_query = "SELECT id, date, thread, message, user, forum, parent, isApproved, " \
+            "isHighlighted, isEdited, isSpam, isDeleted, likes, dislikes, points, path " \
+            "FROM Post WHERE thread=%s AND date >= '%s' ORDER BY path ASC %s" % (thread_id, since, lim)
         cursor.execute(full_query)
         posts_info = cursor.fetchall()
         return tree_sort(posts_info, lim)
@@ -435,13 +433,13 @@ def make_tree_sort_thread(cursor, thread_id, since, limit, order):
 
 def make_parent_tree_sort_thread(cursor, thread_id, since, limit, order):
     if order == 'DESC':
-        sec = "ORDER BY substring_index(P.path, '.', 1) DESC, P.path ASC "
+        sec = "ORDER BY substring_index(path, '.', 1) DESC, path ASC "
     else:
-        sec = "ORDER BY P.path ASC"
+        sec = "ORDER BY path ASC"
 
-    first = "SELECT P.id, P.date, P.thread, P.message, P.user, P.forum, P.parent, P.isApproved, " \
-            "P.isHighlighted, P.isEdited, P.isSpam, P.isDeleted, P.likes, P.dislikes, P.points, P.path " \
-            "FROM Post P WHERE P.thread=%s AND P.date >= '%s' " % (thread_id, since)
+    first = "SELECT id, date, thread, message, user, forum, parent, isApproved, " \
+            "isHighlighted, isEdited, isSpam, isDeleted, likes, dislikes, points, path " \
+            "FROM Post P WHERE thread=%s AND date >= '%s' " % (thread_id, since)
 
     full_query = first + sec
     cursor.execute(full_query)
@@ -452,33 +450,9 @@ def make_parent_tree_sort_thread(cursor, thread_id, since, limit, order):
         if '.' not in x[15]:
             counter += 1
         if counter > limit:
-            new_list = sorted(limit_list, key=lambda k: k['id'])
             return limit_list
         limit_list.append(get_post_info_special(x))
-    new_list = sorted(limit_list, key=lambda k: k['id'])
     return limit_list
-
-
-# def open_close_thread(is_closed, upd_or_open, thread_id):
-#     conn = mysql.get_db()
-#     cursor = conn.cursor()
-#     cursor.execute("SELECT * FROM Thread WHERE id='%s'" % thread_id)
-#     if not cursor.fetchall():
-#         return jsonify(code=1, response="Can't find this thread")
-#     action = "isDeleted"
-#     if upd_or_open:
-#         action = "isClosed"
-#     sql_data = (is_closed, thread_id)
-#     part1 = "UPDATE Thread SET %s=" % action
-#     part2 = "%s WHERE id=%s" % (is_closed, thread_id)
-#     query = part1 + part2
-#     cursor.execute(query)
-#     conn.commit()
-#     resp = {
-#         "thread": thread_id
-#     }
-#     cursor.close()
-#     return jsonify(code=0, response=resp)
 
 
 def rem_restore(is_closed, thread_id):
