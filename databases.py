@@ -9,7 +9,6 @@ mysql = MySQL()
 
 app = Flask(__name__)
 
-
 app.config['MYSQL_DATABASE_USER'] = 'root'
 app.config['MYSQL_DATABASE_PASSWORD'] = ''
 app.config['MYSQL_DATABASE_DB'] = 'db_project'
@@ -21,6 +20,14 @@ app.register_blueprint(thread_api, url_prefix='/db/api/thread/')
 app.register_blueprint(post_api, url_prefix='/db/api/post/')
 
 mysql.init_app(app)
+
+
+@app.route('/', methods=['GET'])
+def hello():
+    conn = mysql.get_db()
+    cursor = conn.cursor()
+    cursor.execute('SELECT @@FOREIGN_KEY_CHECKS')
+    return jsonify(code=0, response=cursor.fetchall()[0][0])
 
 
 @app.route('/db/api/status/', methods=['GET'])
@@ -65,7 +72,6 @@ def api_clear():
     cursor.execute('SET FOREIGN_KEY_CHECKS=1')
     conn.commit()
     return jsonify(code=0, response="OK")
-
 
 
 if __name__ == '__main__':
