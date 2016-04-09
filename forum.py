@@ -156,10 +156,9 @@ def forum_list_posts():
 
     related_list = request.args.getlist('related')
 
-    query_first = "SELECT P.id, P.date, P.thread, P.message, P.user, P.forum, P.parent, P.isApproved, P.isHighlighted, " \
-                  "P.isEdited, P.isSpam, P.isDeleted, P.likes, P.dislikes, P.points, P.path FROM Post P " \
-                  "INNER JOIN Forum F ON P.forum=F.short_name WHERE F.short_name='%s' AND P.date >= '%s' " \
-                  "ORDER BY P.date %s %s" % (forum_short_name, since, order, limit)
+    query_first = "SELECT * FROM Post " \
+                  "WHERE forum='%s' AND date >= '%s' " \
+                  "ORDER BY date %s %s" % (forum_short_name, since, order, limit)
     cursor.execute(query_first)
     posts_info = cursor.fetchall()
     if not posts_info:

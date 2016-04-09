@@ -13,6 +13,7 @@ app.config['MYSQL_DATABASE_USER'] = 'root'
 app.config['MYSQL_DATABASE_PASSWORD'] = ''
 app.config['MYSQL_DATABASE_DB'] = 'db_project'
 app.config['MYSQL_DATABASE_HOST'] = 'localhost'
+app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
 
 app.register_blueprint(user_api, url_prefix='/db/api/user/')
 app.register_blueprint(forum_api, url_prefix='/db/api/forum/')
@@ -74,5 +75,5 @@ def api_clear():
     return jsonify(code=0, response="OK")
 
 
-if __name__ == '__main__':
-    app.run(debug=True)
+# if __name__ == '__main__':
+#     app.run()

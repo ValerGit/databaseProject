@@ -302,10 +302,10 @@ def get_post_path(cursor, new_post_parent_id):
         new_post_path = str_end
 
     else:
-        cursor.execute("SELECT max(path) FROM Post WHERE path LIKE '______'")
-        biggest_post = cursor.fetchall()[0][0]
-        if biggest_post is not None:
-            biggest_post_id = int(biggest_post) + 1
+        cursor.execute("SELECT path FROM Post WHERE path LIKE '______' ORDER BY id desc LIMIT 1")
+        biggest_post = cursor.fetchall()
+        if len(biggest_post) != 0:
+            biggest_post_id = int(biggest_post[0][0]) + 1
             new_post_path = '{0:06d}'.format(biggest_post_id)
         else:
             new_post_path = '{0:06d}'.format(1)
