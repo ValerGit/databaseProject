@@ -286,7 +286,7 @@ def get_post_path(cursor, new_post_parent_id):
     if info:
         parent_path = info[0][0]
         query_sub_path = parent_path + '.______'
-        cursor.execute("SELECT max(path) FROM Post WHERE path LIKE '%s'" % query_sub_path)
+        cursor.execute("SELECT max(path) FROM Post WHERE path LIKE '%s' ORDER BY id desc" % query_sub_path)
         biggest_child_path = cursor.fetchall()[0][0]
         str_end = ""
         if biggest_child_path:
