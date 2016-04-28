@@ -405,25 +405,16 @@ def make_tree_sort_thread(cursor, thread_id, since, limit, order):
     if limit != 0:
         lim = "LIMIT " + str(limit)
     if order == 'DESC':
-        special = "%.%"
-        first = "SELECT * " \
-            "FROM Post WHERE thread=%s AND date >= '%s' AND path not like '%s' " \
-            "ORDER BY path DESC %s" % (thread_id, since, special, lim)
-        cursor.execute(first)
-        posts_info = cursor.fetchall()
-        second = "SELECT * " \
-            "FROM Post WHERE thread=%s AND date >= '%s' AND path LIKE '%s' " \
-            "ORDER BY substring_index(path, '.', 2) desc,  path ASC %s" % (thread_id, since, special, lim)
-        cursor.execute(second)
-        childs_info = cursor.fetchall()
-        return special_tree_sort(posts_info, childs_info, limit)
-
+        query_first = "SELECT * FROM Post " \
+                  "WHERE thread = %s AND date >= '%s' " \
+                  "ORDER by substring_index(path, '.', 1) DESC, path ASC %s" % (thread_id, since, lim)
     else:
-        full_query = "SELECT * " \
-            "FROM Post WHERE thread=%s AND date >= '%s' ORDER BY path ASC %s" % (thread_id, since, lim)
-        cursor.execute(full_query)
-        posts_info = cursor.fetchall()
-        return tree_sort(posts_info, lim)
+        query_first = "SELECT * FROM Post " \
+                  "WHERE thread = %s AND date >= '%s' " \
+                  "ORDER BY path %s %s" % (thread_id, since, order, lim)
+    cursor.execute(query_first)
+    posts_info = cursor.fetchall()
+    return tree_sort(posts_info, limit)
 
 
 def make_parent_tree_sort_thread(cursor, thread_id, since, limit, order):

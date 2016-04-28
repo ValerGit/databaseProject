@@ -228,15 +228,10 @@ def get_thread_with_params(cursor, thread, related_list):
     }
     return resp
 
-
 def tree_sort(posts_info, limit):
     limit_list = []
-    counter = 0
     for x in posts_info:
         limit_list.append(get_post_info_special(x))
-        counter += 1
-        if counter == limit and limit != 0:
-            return limit_list
     return limit_list
 
 

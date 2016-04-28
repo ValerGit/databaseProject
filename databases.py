@@ -9,9 +9,9 @@ mysql = MySQL()
 
 app = Flask(__name__)
 
-app.config['MYSQL_DATABASE_USER'] = 'root'
-app.config['MYSQL_DATABASE_PASSWORD'] = ''
-app.config['MYSQL_DATABASE_DB'] = 'db_project'
+app.config['MYSQL_DATABASE_USER'] = 'dev'
+app.config['MYSQL_DATABASE_PASSWORD'] = '12345678'
+app.config['MYSQL_DATABASE_DB'] = 'db_project_small'
 app.config['MYSQL_DATABASE_HOST'] = 'localhost'
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
 
@@ -75,5 +75,5 @@ def api_clear():
     return jsonify(code=0, response="OK")
 
 
-# if __name__ == '__main__':
-#     app.run()
+if __name__ == '__main__':
+    app.run()
