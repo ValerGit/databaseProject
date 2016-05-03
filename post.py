@@ -147,7 +147,7 @@ def post_list():
 
     since = request.args.get('since')
     if not since:
-        since = "1970-01-01"
+        since = "1970-01-01 00:00:00"
 
     limit = ""
     if request.args.get('limit'):

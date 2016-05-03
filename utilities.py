@@ -36,17 +36,17 @@ def empty_check(value):
 def get_user_info_external_by_input(cursor, user):
     resp = {}
     if user is not None:
-        email = user[2]
+        email = user[1]
         all_fetched_followers = get_followers(cursor, email)
         all_fetched_followees = get_followees(cursor, email)
         all_fetched_subscr = get_subscriptions(cursor, email)
         resp = {
-            "id": user[1],
+            "id": user[0],
             "email": email,
-            "about": user[3],
-            "isAnonymous": true_false_ret(user[4]),
-            "name": empty_check(user[5]),
-            "username": empty_check(user[6]),
+            "about": user[2],
+            "isAnonymous": true_false_ret(user[3]),
+            "name": empty_check(user[4]),
+            "username": empty_check(user[5]),
             "followers": all_fetched_followers,
             "following": all_fetched_followees,
             "subscriptions": all_fetched_subscr

@@ -112,24 +112,32 @@ def forum_list_users():
     if not since_id:
         since_id = 0
 
-    limit = ""
+    limit = None
+    limit_word = ""
     if request.args.get('limit'):
-        limit = "LIMIT " + request.args.get('limit')
+        limit = int(request.args.get('limit'))
+        temp_lim = limit + 5
+        limit_word = "LIMIT " + str(temp_lim)
 
     order = request.args.get('order')
     if not order:
         order = "DESC"
 
-    full_query = "SELECT DISTINCT(P.user), U.id, U.email, U.about, U.isAnonymous, U.name, U.username FROM Post P " \
+    full_query = "SELECT U.id, U.email, U.about, U.isAnonymous, U.name, U.username FROM Post P " \
                  "INNER JOIN User U ON P.user=U.email WHERE P.isDeleted=0 AND P.forum='%s' AND U.id >= '%s' " \
-                 "ORDER BY U.name %s %s" % (forum_short_name, since_id, order, limit)
+                 "ORDER BY U.name %s %s" % (forum_short_name, since_id, order, limit_word)
 
     cursor.execute(full_query)
     user_info = cursor.fetchall()
     if not user_info:
         return jsonify(code=0, response=[])
     end_list = []
-    for x in user_info:
+    seen = set()
+    seen_add = seen.add
+    last_list = [x for x in user_info if not (x in seen or seen_add(x))]
+    if limit is not None:
+        last_list = last_list[:limit]
+    for x in last_list:
         end_list.append(get_user_info_external_by_input(cursor, x))
     return jsonify(code=0, response=end_list)
 
