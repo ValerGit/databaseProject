@@ -116,14 +116,14 @@ def forum_list_users():
     limit_word = ""
     if request.args.get('limit'):
         limit = int(request.args.get('limit'))
-        temp_lim = limit + 5
+        temp_lim = limit
         limit_word = "LIMIT " + str(temp_lim)
 
     order = request.args.get('order')
     if not order:
         order = "DESC"
 
-    full_query = "SELECT U.id, U.email, U.about, U.isAnonymous, U.name, U.username FROM Post P " \
+    full_query = "SELECT U.* FROM Post P " \
                  "INNER JOIN User U ON P.user=U.email WHERE P.isDeleted=0 AND P.forum='%s' AND U.id >= '%s' " \
                  "ORDER BY U.name %s %s" % (forum_short_name, since_id, order, limit_word)
 
